@@ -1,15 +1,13 @@
 #ifndef BLACKRED_HPP
 #define BLACKRED_HPP
 #include "../../models/Node.hpp"
-#include "../../models/OrderedNavigable.hpp"
 #include "../../models/Tree.hpp"
 #include "utils/treeFunctions.cpp"
 #include <functional>
 #include <iostream>
 #include <queue>
 
-template <typename T>
-class RedBlack : public Tree<T>, public OrderedNavigable<T> {
+template <typename T> class RedBlack : public Tree<T> {
   using callback = std::function<void(Node<T> *)>;
 
 public:
