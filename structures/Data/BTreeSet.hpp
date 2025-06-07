@@ -1,17 +1,17 @@
 #ifndef SET_HPP
 #define SET_HPP
-#include "../../models/ISet.hpp"
+#include "../../models/Set.hpp"
 #include "../../models/Tree.hpp"
 #include "../Trees/AVLTree.hpp"
 
 template <typename T, typename TreeType = AVLTree<T>>
-class Set : public DataStructure<T>, public ISet<T, Set<T, TreeType>> {
+class BTreeSet : public DataStructure<T>, public Set<T, Set<T, TreeType>> {
   static_assert(std::is_base_of<Tree<T>, TreeType>::value,
                 "TreeType must be derived from Tree<T>");
 
 public:
-  Set() : _elements() {}
-  ~Set() {};
+  BTreeSet() : _elements() {}
+  ~BTreeSet() {};
 
   // Métodos da estrutura de dados
   void insert(T value) override { _elements.insert(value); };
@@ -22,8 +22,9 @@ public:
   void clear() override { _elements.clear(); };
 
   // Operadores de conjuntos
-  Set<T, TreeType> operator+(const Set<T, TreeType> &otherSet) const override {
-    Set<T, TreeType> result;
+  BTreeSet<T, TreeType>
+  operator+(const BTreeSet<T, TreeType> &otherSet) const override {
+    BTreeSet<T, TreeType> result;
     _elements.in_order(
         [&result](const Node<T> *node) { result.insert(node->key); });
     otherSet._elements.in_order(
@@ -31,8 +32,9 @@ public:
     return result;
   }
 
-  Set<T, TreeType> operator-(const Set<T, TreeType> &otherSet) const override {
-    Set<T, TreeType> result;
+  BTreeSet<T, TreeType>
+  operator-(const BTreeSet<T, TreeType> &otherSet) const override {
+    BTreeSet<T, TreeType> result;
     _elements.in_order([&](const Node<T> *node) {
       if (!otherSet.contains(node->key)) {
         result.insert(node->key);
@@ -41,8 +43,9 @@ public:
     return result;
   }
 
-  Set<T, TreeType> operator&(const Set<T, TreeType> &otherSet) const override {
-    Set<T, TreeType> result;
+  BTreeSet<T, TreeType>
+  operator&(const BTreeSet<T, TreeType> &otherSet) const override {
+    BTreeSet<T, TreeType> result;
     _elements.in_order([&](const Node<T> *node) {
       if (otherSet.contains(node->key)) {
         result.insert(node->key);
@@ -51,9 +54,9 @@ public:
     return result;
   }
 
-  Set<T, TreeType>
-  symmetricDifference(const Set<T, TreeType> &otherSet) const override {
-    Set<T, TreeType> result;
+  BTreeSet<T, TreeType>
+  symmetricDifference(const BTreeSet<T, TreeType> &otherSet) const override {
+    BTreeSet<T, TreeType> result;
     _elements.in_order([&](const Node<T> *node) {
       if (!otherSet.contains(node->key)) {
         result.insert(node->key);
@@ -67,7 +70,7 @@ public:
     return result;
   }
 
-  bool operator==(const Set<T, TreeType> &otherSet) const override {
+  bool operator==(const BTreeSet<T, TreeType> &otherSet) const override {
     std::vector<T> elems1, elems2;
     _elements.in_order(
         [&](const Node<T> *node) { elems1.push_back(node->key); });
@@ -76,7 +79,7 @@ public:
     return elems1 == elems2;
   }
 
-  bool isSubset(const Set<T, TreeType> &otherSet) const override {
+  bool isSubset(const BTreeSet<T, TreeType> &otherSet) const override {
     bool subset = true;
     _elements.in_order([&](const Node<T> *node) {
       if (!otherSet.contains(node->key)) {
