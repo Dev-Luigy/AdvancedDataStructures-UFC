@@ -1,0 +1,27 @@
+#ifndef HEAP_HPP
+#define HEAP_HPP
+#include "../../models/DataStructure.hpp"
+
+// TODO: wee need to implement this DataStrcuture.
+template <typename T> class BinaryHeap : public DataStructure<T> {
+
+public:
+  BinaryHeap() : _elements() {}
+  ~BinaryHeap() {};
+
+  // Métodos da estrutura de dados
+  void insert(T value) override { _elements.insert(value); };
+  void remove(T value) override { _elements.remove(value); };
+  T minimum() override { return _elements.minimum(); };
+  T maximum() override { return _elements.maximum(); };
+  T successor(T value) override { return _elements.successor(value); };
+  T predecessor(T value) override { return _elements.predecessor(value); };
+  bool contains(T k) const override { return _elements.contains(k); };
+  bool isEmpty() override { return _elements.isEmpty(); };
+  void show() override { _elements.show(); };
+  void clear() override { _elements.clear(); };
+
+private:
+  T _elements;
+};
+#endif
