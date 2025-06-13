@@ -3,12 +3,10 @@
 #include "../../interfaces/core/Node.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
 #include "contexts/RedBlack/InsertionContext.hpp"
-#include <functional>
 #include <iostream>
 #include <queue>
 
 template <typename T> class RedBlack : public RotatableTree<T> {
-  using callback = std::function<void(Node<T> *)>;
 
 public:
   RedBlack() {};
