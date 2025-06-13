@@ -1,5 +1,5 @@
-#ifndef BLACKRED_HPP
-#define BLACKRED_HPP
+#ifndef REDBLACK_HPP
+#define REDBLACK_HPP
 #include "../../interfaces/core/Node.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
 #include "contexts/RedBlack/InsertionContext.hpp"
@@ -99,31 +99,6 @@ private:
     return u;
   }
 
-  Node<T> *_fixup_node(Node<T> *node) {
-    InsertionContext<T> ctx(node);
-    switch (ctx.getInsertionCase()) {
-    case InsertionContext<T>::ROOT:
-      node->color = BLACK;
-      break;
-
-    case InsertionContext<T>::CASE1:
-      // correção com recoloração
-      break;
-
-    case InsertionContext<T>::CASE2A:
-    case InsertionContext<T>::CASE2B:
-      // rotação dupla
-      break;
-
-    case InsertionContext<T>::CASE3A:
-    case InsertionContext<T>::CASE3B:
-      // rotação simples
-      break;
-    }
-  }
-
-  Node<T> *_fixup_deletion(Node<T> *node) {}
-
   void show(Node<T> *node, std::string heranca) {
     if (node != nullptr && (node->left != nullptr || node->right != nullptr))
       show(node->right, heranca + "r");
@@ -140,22 +115,34 @@ private:
       show(node->left, heranca + "l");
   }
 
+  void _adjust_node_family(Node<T> *new_node, Node<T> *old_node) {
+    if (!new_node || !old_node)
+      return;
+
+    new_node->parent = old_node->parent;
+    new_node->left = old_node->left;
+    new_node->right = old_node->right;
+  }
+
+  void _adjust_node_parent(Node<T> *new_node, Node<T> *old_node) {
+    if (!new_node || !old_node)
+      return;
+
+    new_node->parent = old_node;
+  }
+
   Node<T> *_insert(Node<T> *node, T value) {
-    if (!m_root)
-      return new Node(value, BLACK);
+    if (!node)
+      return new Node(value, RED);
 
     if (node->key == value) {
       return node;
     }
 
-    auto adjustNodeParent = [&](Node<T> *insertedNode, Node<T> *parent) {
-      insertedNode->parent = parent;
-    };
-
-    if (node->key > value) {
+    if (value < node->key) {
       node->left = _insert(node->left, value);
 
-      adjustNodeParent(node->left, node);
+      _adjust_node_parent(node->left, node);
 
     } else {
       node->right = _insert(node->right, value);
@@ -163,8 +150,30 @@ private:
       adjustNodeParent(node->right, node);
     }
 
-    node = _fixup_node(node);
+    return _fixup_node(node);
   }
+
+  Node<T> *_fixup_node(Node<T> *node) {
+    InsertionContext<T> ctx(node);
+    switch (ctx.getInsertionCase()) {
+    case InsertionCase::ROOT:
+      node->color = BLACK;
+      break;
+
+    case InsertionCase::CASE1:
+      break;
+
+    case InsertionCase::CASE2A:
+    case InsertionCase::CASE2B:
+      break;
+
+    case InsertionCase::CASE3A:
+    case InsertionCase::CASE3B:
+      break;
+    }
+  }
+
+  Node<T> *_fixup_deletion(Node<T> *node) {}
 
   Node<T> *_minimum(Node<T> *node) {
     if (!node->left)
