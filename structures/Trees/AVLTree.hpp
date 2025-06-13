@@ -1,15 +1,12 @@
 #ifndef AVLTREE_HPP
 #define AVLTREE_HPP
 #include "../../interfaces/core/Node.hpp"
-#include "../../interfaces/trees/RotatableTree.hpp"
-#include "utils/treeFunctions.cpp"
-#include <functional>
+#include "../../interfaces/trees/rotatable/RotatableTree.hpp"
 #include <iostream>
 #include <queue>
 
 // WARN: We need to verify if this implementation are correct.
 template <typename T> class AVLTree : public RotatableTree<T> {
-  using callback = std::function<void(Node<T> *)>;
 
 public:
   AVLTree() {};
@@ -65,22 +62,7 @@ public:
   int size() override { return _size(m_root); };
   int height() override { return _tree_height(m_root); };
   void BFS() override { _BFS(m_root); };
-
-  void pre_order(const callback &func = &printValues) const {
-    _pre_order(m_root, func);
-  };
-
-  void reverse_pre_order(const callback &func = &printValues) const {
-    _reverse_pre_order(m_root, func);
-  }
-
-  void post_order(const callback &func = &printValues) const {
-    _post_order(m_root, func);
-  };
-
-  void in_order(const callback &func = &printValues) const {
-    _in_order(m_root, func);
-  };
+  Node<T> *getRoot() const override { return m_root; }
 
 private:
   Node<T> *m_root{nullptr};
@@ -385,42 +367,6 @@ private:
       return 0;
 
     return 1 + _size(node->left) + _size(node->right);
-  }
-
-  void _reverse_pre_order(Node<T> *node, const callback &func) const {
-    if (node == nullptr)
-      return;
-
-    func(node);
-    _reverse_pre_order(node->right, func);
-    _reverse_pre_order(node->left, func);
-  }
-
-  void _pre_order(Node<T> *node, const callback &func) const {
-    if (node == nullptr)
-      return;
-
-    func(node);
-    _pre_order(node->left, func);
-    _pre_order(node->right, func);
-  }
-
-  void _post_order(Node<T> *node, const callback &func) const {
-    if (node == nullptr)
-      return;
-
-    _post_order(node->left, func);
-    _post_order(node->right, func);
-    func(node);
-  }
-
-  void _in_order(Node<T> *node, const callback &func) const {
-    if (node == nullptr)
-      return;
-
-    _in_order(node->left, func);
-    func(node);
-    _in_order(node->right, func);
   }
 };
 
