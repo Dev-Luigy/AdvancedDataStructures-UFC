@@ -147,7 +147,7 @@ private:
     } else {
       node->right = _insert(node->right, value);
 
-      adjustNodeParent(node->right, node);
+      _adjust_node_parent(node->right, node);
     }
 
     return _fixup_node(node);
@@ -157,10 +157,13 @@ private:
     InsertionContext<T> ctx(node);
     switch (ctx.getInsertionCase()) {
     case InsertionCase::ROOT:
-      node->color = BLACK;
+      if (node == m_root)
+        node->color = BLACK;
+      // else node are children of root and are Red, no fixup needeed
       break;
 
     case InsertionCase::CASE1:
+
       break;
 
     case InsertionCase::CASE2A:
