@@ -1,51 +1,11 @@
 #ifndef BLACKRED_HPP
 #define BLACKRED_HPP
 #include "../../interfaces/core/Node.hpp"
-// #include "../../models/enum/NodeColor.hpp" -- if necessary
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
 #include "contexts/RedBlack/InsertionContext.hpp"
 #include <functional>
 #include <iostream>
 #include <queue>
-
-enum InsertionCase {
-  // inserted node parent and uncle are red, then we can transform both
-  // into black and change grand parent to red, so we have same black height.
-  // this case bring red-red commonly appears red-red problems.
-  ICASE1,
-
-  // inserted node are right child and have black uncle, then we can't pass
-  // color to grand parent,
-  // Parent is left and new node are right
-  ICASE2A,
-
-  // inserted node are left child and have black uncle, then we can't pass
-  // color to grand parent,
-  // Parent is right and new node are left
-  ICASE2B,
-
-  // inserted node are left child and have black uncle, then we can't pass
-  // color to grand parent,
-  // Parent is left and new node are left
-  ICASE3A,
-
-  // inserted node are right child and have black uncle, then we can't pass
-  // color to grand parent,
-  // Parent is right and new node are right
-  ICASE3B
-};
-
-enum DeletionCase {
-  //
-
-  DCASE1
-
-  ,
-  DCASE2A,
-  DCASE2B,
-  DCASE3A,
-  DCASE3B
-};
 
 template <typename T> class RedBlack : public RotatableTree<T> {
   using callback = std::function<void(Node<T> *)>;
@@ -139,47 +99,30 @@ private:
     return u;
   }
 
-  InsertionCase verifyInsertionCase(Node<T> *node) {
-    Node<T> *parent = node->parent;
-    Node<T> *gParent = parent->parent;
-    Node<T> *uncle = gParent->left == parent ? gParent->right : gParent->left;
+  Node<T> *_fixup_node(Node<T> *node) {
+    InsertionContext<T> ctx(node);
+    switch (ctx.getInsertionCase()) {
+    case InsertionContext<T>::ROOT:
+      node->color = BLACK;
+      break;
 
-    if (uncle->color == RED) {
-      return ICASE1;
-    }
+    case InsertionContext<T>::CASE1:
+      // correção com recoloração
+      break;
 
-    bool isNodeLeftChildren = node->key < parent->key;
-    bool isParentLeftChildren = parent->key < gParent->key;
+    case InsertionContext<T>::CASE2A:
+    case InsertionContext<T>::CASE2B:
+      // rotação dupla
+      break;
 
-    if (isParentLeftChildren) {
-      if (isNodeLeftChildren) // Left-Left
-        return ICASE3A;
-      else
-        return ICASE2A; // Left-Right
-    } else {
-      if (isNodeLeftChildren) {
-        return ICASE2B; // Right-Left
-      } else
-        return ICASE3B; // Right-Right
+    case InsertionContext<T>::CASE3A:
+    case InsertionContext<T>::CASE3B:
+      // rotação simples
+      break;
     }
   }
 
-  Node<T> *_fixup_node(Node<T> *node, InsertionCase actualCase) {
-    Node<T> *parent = node->parent;
-    Node<T> *gParent = parent->parent;
-    Node<T> *uncle = gParent->left == parent ? gParent->right : gParent->left;
-
-    switch (actualCase) {
-    case ICASE1:;
-    case ICASE2A:;
-    case ICASE2B:;
-    case ICASE3A:;
-    case ICASE3B:;
-    default:;
-    }
-  }
-
-  Node<T> *_fixup_deletion(Node<T> *node, DeletionCase actualCase) {}
+  Node<T> *_fixup_deletion(Node<T> *node) {}
 
   void show(Node<T> *node, std::string heranca) {
     if (node != nullptr && (node->left != nullptr || node->right != nullptr))
