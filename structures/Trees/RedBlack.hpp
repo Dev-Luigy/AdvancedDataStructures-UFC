@@ -2,10 +2,50 @@
 #define BLACKRED_HPP
 #include "../../models/Node.hpp"
 #include "../../models/RotatableTree.hpp"
+// #include "../../models/enum/NodeColor.hpp"
 #include "utils/treeFunctions.cpp"
 #include <functional>
 #include <iostream>
 #include <queue>
+
+enum InsertionCase {
+  // inserted node parent and uncle are red, then we can transform both
+  // into black and change grand parent to red, so we have same black height.
+  // this case bring red-red commonly appears red-red problems.
+  ICASE1,
+
+  // inserted node are right child and have black uncle, then we can't pass
+  // color to grand parent,
+  // Parent is left and new node are right
+  ICASE2A,
+
+  // inserted node are left child and have black uncle, then we can't pass
+  // color to grand parent,
+  // Parent is right and new node are left
+  ICASE2B,
+
+  // inserted node are left child and have black uncle, then we can't pass
+  // color to grand parent,
+  // Parent is left and new node are left
+  ICASE3A,
+
+  // inserted node are right child and have black uncle, then we can't pass
+  // color to grand parent,
+  // Parent is right and new node are right
+  ICASE3B
+};
+
+enum DeletionCase {
+  //
+
+  DCASE1
+
+  ,
+  DCASE2A,
+  DCASE2B,
+  DCASE3A,
+  DCASE3B
+};
 
 template <typename T> class RedBlack : public RotatableTree<T> {
   using callback = std::function<void(Node<T> *)>;
@@ -96,32 +136,65 @@ private:
   int _greater_children_height(Node<T> *node) {
     return std::max(_height(node->left), _height(node->right));
   }
-  // AVL methods
-  int _balance(Node<T> *node) {
-    return _height(node->right) - _height(node->left);
-  }
 
-  Node<T> *_rotate_left(Node<T> *node) {
+  // RotatableTree methods:
+  Node<T> *_rotate_left(Node<T> *node) override {
     Node<T> *u = node->right;
     node->right = u->left;
     u->left = node;
 
-    node->height = 1 + _greater_children_height(node);
-    u->height = 1 + _greater_children_height(u);
-
     return u;
   }
 
-  Node<T> *_rotate_right(Node<T> *node) {
+  Node<T> *_rotate_right(Node<T> *node) override {
     Node<T> *u = node->left;
     node->left = u->right;
     u->right = node;
 
-    node->height = 1 + _greater_children_height(node);
-    u->height = 1 + _greater_children_height(u);
-
     return u;
   }
+
+  InsertionCase verifyInsertionCase(Node<T> *node) {
+    Node<T> *parent = node->parent;
+    Node<T> *gParent = parent->parent;
+    Node<T> *uncle = gParent->left == parent ? gParent->right : gParent->left;
+
+    if (uncle->color == RED) {
+      return ICASE1;
+    }
+
+    bool isNodeLeftChildren = node->key < parent->key;
+    bool isParentLeftChildren = parent->key < gParent->key;
+
+    if (isParentLeftChildren) {
+      if (isNodeLeftChildren) // Left-Left
+        return ICASE3A;
+      else
+        return ICASE2A; // Left-Right
+    } else {
+      if (isNodeLeftChildren) {
+        return ICASE2B; // Right-Left
+      } else
+        return ICASE3B; // Right-Right
+    }
+  }
+
+  Node<T> *_fixup_node(Node<T> *node, InsertionCase actualCase) {
+    Node<T> *parent = node->parent;
+    Node<T> *gParent = parent->parent;
+    Node<T> *uncle = gParent->left == parent ? gParent->right : gParent->left;
+
+    switch (actualCase) {
+    case ICASE1:;
+    case ICASE2A:;
+    case ICASE2B:;
+    case ICASE3A:;
+    case ICASE3B:;
+    default:;
+    }
+  }
+
+  Node<T> *_fixup_deletion(Node<T> *node, DeletionCase actualCase) {}
 
   void show(Node<T> *node, std::string heranca) {
     if (node != nullptr && (node->left != nullptr || node->right != nullptr))
@@ -147,15 +220,22 @@ private:
       return node;
     }
 
+    auto adjustNodeParent = [&](Node<T> *insertedNode, Node<T> *parent) {
+      insertedNode->parent = parent;
+    };
+
     if (node->key > value) {
       node->left = _insert(node->left, value);
 
-      Node<T> *insertedNode = node->left;
-      insertedNode->parent = node;
+      adjustNodeParent(node->left, node);
 
     } else {
       node->right = _insert(node->right, value);
+
+      adjustNodeParent(node->right, node);
     }
+
+    node = _fixup_node(node);
   }
 
   Node<T> *_minimum(Node<T> *node) {
