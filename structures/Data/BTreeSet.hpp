@@ -1,7 +1,7 @@
 #ifndef SET_HPP
 #define SET_HPP
-#include "../../models/Set.hpp"
-#include "../../models/Tree.hpp"
+#include "../../interfaces/structures/Set.hpp"
+#include "../../interfaces/trees/Tree.hpp"
 #include "../Trees/AVLTree.hpp"
 
 template <typename T, typename TreeType = AVLTree<T>>

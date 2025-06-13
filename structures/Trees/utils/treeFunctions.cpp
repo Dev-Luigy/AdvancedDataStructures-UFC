@@ -1,7 +1,7 @@
 #ifndef TREEFUNCTIONS_HPP
 #define TREEFUNCTIONS_HPP
 
-#include "../../../models/Node.hpp"
+#include "../../../interfaces/core/Node.hpp"
 #include <iostream>
 #include <stack>
 #include <vector>
