@@ -1,7 +1,7 @@
 #ifndef BINARYTREE_HPP
 #define BINARYTREE_HPP
-#include "../../models/Node.hpp"
-#include "../../models/Tree.hpp"
+#include "../../interfaces/core/Node.hpp"
+#include "../../interfaces/trees/Tree.hpp"
 #include "utils/treeFunctions.cpp"
 #include <cmath>
 #include <functional>

@@ -1,13 +1,12 @@
 #ifndef AVLTREE_HPP
 #define AVLTREE_HPP
-#include "../../models/Node.hpp"
-#include "../../models/RotatableTree.hpp"
+#include "../../interfaces/core/Node.hpp"
+#include "../../interfaces/trees/RotatableTree.hpp"
 #include "utils/treeFunctions.cpp"
 #include <functional>
 #include <iostream>
 #include <queue>
 
-// WARN: Wee need to verify this implementation
 template <typename T> class AVLTree : public RotatableTree<T> {
   using callback = std::function<void(Node<T> *)>;
 

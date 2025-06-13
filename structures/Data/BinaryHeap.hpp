@@ -1,6 +1,6 @@
 #ifndef HEAP_HPP
 #define HEAP_HPP
-#include "../../models/DataStructure.hpp"
+#include "../../interfaces/core/DataStructure.hpp"
 
 // TODO: wee need to implement this DataStrcuture.
 template <typename T> class BinaryHeap : public DataStructure<T> {
