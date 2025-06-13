@@ -2,15 +2,10 @@
 #define BINARYTREE_HPP
 #include "../../interfaces/core/Node.hpp"
 #include "../../interfaces/trees/Tree.hpp"
-#include "utils/treeFunctions.cpp"
-#include <cmath>
-#include <functional>
 #include <iostream>
 #include <queue>
-#include <stack>
 
 template <typename T> class BinaryTree : public Tree<T> {
-  using callback = std::function<void(Node<T> *)>;
 
 public:
   BinaryTree() {};
@@ -34,33 +29,7 @@ public:
   int size() override { return _size(m_root); };
   int height() override { return _height(m_root); };
   void BFS() override { _BFS(m_root); };
-
-  // Other Methods
-  void orderTreeValues() { _orderTreeValues(); };
-
-  void pre_order(const callback &func = &printValues) const {
-    _pre_order(m_root, func);
-  };
-  void iteractive_pre_order(const callback &func = &printValues) const {
-    _iteractive_pre_order(func);
-  };
-  void reverse_pre_order(const callback &func = &printValues) const {
-    _reverse_pre_order(m_root, func);
-  }
-
-  void post_order(const callback &func = &printValues) const {
-    _post_order(m_root, func);
-  };
-  void iteractive_post_order(const callback &func = &printValues) const {
-    _iteractive_post_order(func);
-  }
-
-  void in_order(const callback &func = &printValues) const {
-    _in_order(m_root, func);
-  };
-  void iteractive_in_order(const callback &func = &printValues) const {
-    _iteractive_in_order(func);
-  }
+  Node<T> *getRoot() const override { return m_root; }
 
 private:
   Node<T> *m_root{nullptr};
@@ -301,127 +270,6 @@ private:
       return 0;
 
     return 1 + std::max(_height(node->left), _height(node->right));
-  }
-
-  void _reverse_pre_order(Node<T> *node, const callback &func) {
-    if (node == nullptr)
-      return;
-
-    func(node);
-    _reverse_pre_order(node->right, func);
-    _reverse_pre_order(node->left, func);
-  }
-
-  void _pre_order(Node<T> *node, const callback &func) {
-    if (node == nullptr)
-      return;
-
-    func(node);
-    _pre_order(node->left, func);
-    _pre_order(node->right, func);
-  }
-
-  void _iteractive_pre_order(const callback &func) {
-    Node<T> *node = m_root;
-    std::stack<Node<T> *> stack;
-
-    while (node) {
-      func(node);
-      if (node->right)
-        stack.push(node->right);
-
-      if (node->left)
-        node = node->left;
-      else if (!stack.empty()) {
-        node = stack.top();
-        stack.pop();
-      } else {
-        return;
-      }
-    }
-  }
-
-  void _post_order(Node<T> *node, const callback &func) {
-    if (node == nullptr)
-      return;
-
-    _post_order(node->left, func);
-    _post_order(node->right, func);
-    func(node);
-  }
-
-  void _iteractive_post_order(const callback &func) {
-    if (!m_root)
-      return;
-
-    std::stack<Node<T> *> stack;
-
-    auto collectNodes = [&stack](Node<T> *node) {
-      insertNodesInStack(node, stack);
-    };
-
-    _reverse_pre_order(m_root, collectNodes);
-
-    while (!stack.empty()) {
-      Node<T> *node = stack.top();
-      stack.pop();
-
-      func(node);
-    }
-  }
-
-  void _in_order(Node<T> *node, const callback &func) {
-    if (node == nullptr)
-      return;
-
-    _in_order(node->left, func);
-    func(node);
-    _in_order(node->right, func);
-  }
-
-  void _iteractive_in_order(const callback &func) {
-    Node<T> *node = m_root;
-    std::stack<Node<T> *> stack;
-
-    while (node || !stack.empty()) {
-      if (node) {
-        stack.push(node);
-        node = node->left;
-      } else {
-        node = stack.top();
-        stack.pop();
-        func(node);
-        node = node->right;
-      }
-    }
-  }
-
-  void _orderTreeValues() {
-    if (!size())
-      return;
-
-    std::vector<Node<T> *> values;
-
-    auto collectNodes = [&values](Node<T> *node) {
-      insertNodesInVector(node, values);
-    };
-
-    _in_order(m_root, collectNodes);
-
-    m_root = _ordenate(values, 0, values.size() - 1);
-  }
-
-  Node<T> *_ordenate(std::vector<Node<T> *> &vector, int ini, int end) {
-    if (ini > end)
-      return nullptr;
-
-    int mid = std::floor((ini + end) / 2);
-    Node<T> *node = vector[mid];
-
-    node->left = _ordenate(vector, ini, mid - 1);
-    node->right = _ordenate(vector, mid + 1, end);
-
-    return node;
   }
 };
 
