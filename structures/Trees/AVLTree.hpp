@@ -7,6 +7,7 @@
 #include <iostream>
 #include <queue>
 
+// WARN: We need to verify if this implementation are correct.
 template <typename T> class AVLTree : public RotatableTree<T> {
   using callback = std::function<void(Node<T> *)>;
 
