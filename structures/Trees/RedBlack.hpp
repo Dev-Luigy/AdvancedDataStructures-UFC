@@ -1,8 +1,8 @@
 #ifndef BLACKRED_HPP
 #define BLACKRED_HPP
-#include "../../models/Node.hpp"
-#include "../../models/RotatableTree.hpp"
-// #include "../../models/enum/NodeColor.hpp"
+#include "../../interfaces/core/Node.hpp"
+#include "../../interfaces/trees/RotatableTree.hpp"
+// #include "../../models/enum/NodeColor.hpp" -- if necessary
 #include "utils/treeFunctions.cpp"
 #include <functional>
 #include <iostream>
