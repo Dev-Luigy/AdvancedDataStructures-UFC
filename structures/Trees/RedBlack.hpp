@@ -42,20 +42,16 @@ public:
       throw std::runtime_error("Tree is empty");
     }
     Node<T> *succ = _successor(m_root, value);
-    if (succ == nullptr) {
-      throw std::runtime_error("No successor exists for this value");
-    }
-    return succ->key;
+
+    return succ ? succ->key : value;
   };
   T predecessor(T value) override {
     if (isEmpty()) {
       throw std::runtime_error("Tree is empty");
     }
     Node<T> *pred = _predecessor(m_root, value);
-    if (pred == nullptr) {
-      throw std::runtime_error("No predecessor exists for this value");
-    }
-    return pred->key;
+
+    return pred ? pred->key : value;
   };
 
   // - others datastructures methods.
@@ -252,7 +248,7 @@ private:
 
     return node;
   }
-  Node<T> *_fixup_deletion(Node<T> *node) override { return node; }
+  Node<T> *_fixup_deletion(Node<T> *node) override { return m_root; };
 
   Node<T> *_minimum(Node<T> *node) {
     if (!node->left)
@@ -273,28 +269,16 @@ private:
       return nullptr;
     }
 
-    Node<T> *current = root;
-    Node<T> *successor = nullptr;
+    Node<T> *successor = root;
 
-    while (current && current->key != value) {
-      if (value < current->key) {
-        successor = current;
-        current = current->left;
-      } else {
-        current = current->right;
+    if (!root->right) {
+      delete successor;
+      return root;
+    } else {
+      successor = root->right;
+      while (successor && successor->left) {
+        successor = successor->left;
       }
-    }
-
-    if (!current) {
-      return nullptr; // Value not found
-    }
-
-    if (current->right) {
-      Node<T> *temp = current->right;
-      while (temp->left) {
-        temp = temp->left;
-      }
-      return temp;
     }
 
     return successor;
@@ -305,28 +289,16 @@ private:
       return nullptr;
     }
 
-    Node<T> *current = root;
-    Node<T> *predecessor = nullptr;
+    Node<T> *predecessor = root;
 
-    while (current && current->key != value) {
-      if (value < current->key) {
-        current = current->left;
-      } else {
-        predecessor = current;
-        current = current->right;
+    if (!root->left) {
+      delete predecessor;
+      return root;
+    } else {
+      predecessor = root->left;
+      while (predecessor && predecessor->right) {
+        predecessor = predecessor->right;
       }
-    }
-
-    if (!current) {
-      return nullptr; // Value not found
-    }
-
-    if (current->left) {
-      Node<T> *temp = current->left;
-      while (temp->right) {
-        temp = temp->right;
-      }
-      return temp;
     }
 
     return predecessor;
@@ -342,9 +314,34 @@ private:
     return nullptr;
   }
 
-  Node<T> *_remove(Node<T> *node, T value) { return node; }
+  Node<T> *_remove(Node<T> *node, T value) {
+    if (!node) {
+      return nullptr;
+    }
 
-  Node<T> *_remove_node(Node<T> *node) {}
+    Node<T> *current = node;
+
+    while (current) {
+      if (value < current->key)
+        current = current->left;
+      else if (value > current->key)
+        current = current->right;
+      else if (value == current->key) {
+        break;
+      } else {
+        return nullptr;
+      }
+    }
+
+    Node<T> *aux = _successor(current, current->key);
+    current->key = aux->key;
+    delete aux;
+
+    while (current) {
+      _fixup_deletion(current);
+      current = current->parent;
+    }
+  }
 
   Node<T> *_contains(Node<T> *node, int k) const {
     if (node == nullptr || node->key == k)
