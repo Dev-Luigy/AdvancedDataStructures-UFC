@@ -6,12 +6,9 @@
 #include <stdexcept>
 
 enum class DeletionCase {
-  ROOT, // No fix-up required (node is root or no grandparent)
+  ROOT, // Now our m_root was null.
 
-  // Parent and uncle are RED.
-  // Recolor parent and uncle to BLACK, grandparent to RED.
-  // This maintains black height but may introduce red-red violation higher
-  // up.
+  //
   CASE1,
 
   // Node is the right child of a left parent, uncle is BLACK.
@@ -38,18 +35,17 @@ struct DeletionContext : public FixupContext<DeletionCase> {
   Node<T> *node;
   Node<T> *parent;
   Node<T> *grandparent;
-  Node<T> *uncle;
+  Node<T> *brother;
 
   DeletionContext(Node<T> *n)
       : node(n), parent(n ? n->parent : nullptr),
-        grandparent(parent ? parent->parent : nullptr), uncle(nullptr) {
+        grandparent(parent ? parent->parent : nullptr), brother(nullptr) {
     if (!node) {
       throw std::invalid_argument("Cannot create context from nullptr node");
     }
 
-    if (grandparent) {
-      uncle = (grandparent->left == parent) ? grandparent->right
-                                            : grandparent->left;
+    if (parent) {
+      brother = (parent->left == node) ? parent->right : parent->left;
     }
   }
 
@@ -68,7 +64,7 @@ struct DeletionContext : public FixupContext<DeletionCase> {
     if (!parent || !grandparent)
       return DeletionCase::ROOT;
 
-    if (uncle && uncle->color == RED)
+    if (brother && brother->color == RED)
       return DeletionCase::CASE1;
 
     if (isParentLeftChild()) {
