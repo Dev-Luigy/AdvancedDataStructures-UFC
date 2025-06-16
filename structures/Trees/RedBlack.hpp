@@ -15,7 +15,13 @@ public:
   ~RedBlack() { clear(); };
 
   // Data Structure: methods
-  void insert(T value) override { m_root = _insert(m_root, value); };
+  void insert(T value) override {
+    m_root = _insert(m_root, value);
+    if (m_root)
+      while (m_root->parent) { // because of rotations
+        m_root = m_root->parent;
+      }
+  }
   void remove(T value) override { m_root = _remove(m_root, value); };
 
   // - maximum and minimum
@@ -81,100 +87,172 @@ private:
   }
 
   // RotatableTree methods:
-  Node<T> *_rotate_left(Node<T> *node) override {
-    Node<T> *u = node->right;
-    node->right = u->left;
-    u->left = node;
+  //
+  Node<T> *_rotate_left(Node<T> *old_parent) override {
+    Node<T> *new_parent = old_parent->right;
+    old_parent->right = new_parent->left;
 
-    return u;
+    if (new_parent->left) {
+      new_parent->left->parent = old_parent;
+    }
+
+    new_parent->parent = old_parent->parent;
+
+    if (!old_parent->parent) {
+      m_root = new_parent;
+    } else if (old_parent == old_parent->parent->left) {
+      old_parent->parent->left = new_parent;
+    } else {
+      old_parent->parent->right = new_parent;
+    }
+
+    new_parent->left = old_parent;
+    old_parent->parent = new_parent;
+
+    std::swap(new_parent->color, old_parent->color);
+
+    return new_parent;
   }
 
-  Node<T> *_rotate_right(Node<T> *node) override {
-    Node<T> *u = node->left;
-    node->left = u->right;
-    u->right = node;
+  Node<T> *_rotate_right(Node<T> *old_parent) override {
+    Node<T> *new_parent = old_parent->left;
+    old_parent->left = new_parent->right;
 
-    return u;
+    if (new_parent->right) {
+      new_parent->right->parent = old_parent;
+    }
+
+    new_parent->parent = old_parent->parent;
+
+    if (!old_parent->parent) {
+      m_root = new_parent;
+    } else if (old_parent == old_parent->parent->right) {
+      old_parent->parent->right = new_parent;
+    } else {
+      old_parent->parent->left = new_parent;
+    }
+
+    new_parent->right = old_parent;
+    old_parent->parent = new_parent;
+
+    std::swap(new_parent->color, old_parent->color);
+
+    return new_parent;
   }
 
   void show(Node<T> *node, std::string heranca) {
     if (node != nullptr && (node->left != nullptr || node->right != nullptr))
       show(node->right, heranca + "r");
+
     for (int i = 0; i < (int)heranca.size() - 1; i++)
       std::cout << (heranca[i] != heranca[i + 1] ? "│   " : "    ");
-    if (heranca != "")
+
+    if (!heranca.empty())
       std::cout << (heranca.back() == 'r' ? "┌───" : "└───");
+
     if (node == nullptr) {
-      std::cout << "#" << std::endl;
+      std::cout << "#\n";
       return;
     }
-    std::cout << node->key << std::endl;
-    if (node != nullptr && (node->left != nullptr || node->right != nullptr))
+
+    std::string colorCode =
+        (node->color == NodeColor::RED) ? "\033[31m" : "\033[30m";
+    std::cout << colorCode << node->key << "\033[0m" << std::endl;
+
+    if (node->left != nullptr || node->right != nullptr)
       show(node->left, heranca + "l");
   }
 
-  void _adjust_node_family(Node<T> *new_node, Node<T> *old_node) {
-    if (!new_node || !old_node)
-      return;
+  void _adjust_node_parent(Node<T> *new_node, Node<T> *parent) {
+    if (new_node->parent == nullptr &&
+        new_node != m_root) { // this node was insert now.
+      new_node->parent = parent;
+    }
 
-    new_node->parent = old_node->parent;
-    new_node->left = old_node->left;
-    new_node->right = old_node->right;
-  }
-
-  void _adjust_node_parent(Node<T> *new_node, Node<T> *old_node) {
-    if (!new_node || !old_node)
-      return;
-
-    new_node->parent = old_node;
+    if (new_node->left == parent) { // resolves rotation problems;
+      parent->right = new_node->left != parent ? new_node->left : nullptr;
+      new_node->parent = parent->parent != new_node ? parent->parent : nullptr;
+    } else if (new_node->right == parent) {
+      parent->left = new_node->right != parent ? new_node->right : nullptr;
+      new_node->parent = parent->parent != new_node ? parent->parent : nullptr;
+    }
   }
 
   Node<T> *_insert(Node<T> *node, T value) {
-    if (!node)
-      return new Node(value, RED);
-
-    if (node->key == value) {
-      return node;
+    if (!m_root) {
+      return m_root = new Node<T>(value, BLACK);
     }
 
-    if (value < node->key) {
-      node->left = _insert(node->left, value);
+    Node<T> *new_node = new Node<T>(value);
+    Node<T> *current = node;
 
-      _adjust_node_parent(node->left, node);
+    while (current) {
+      if (value == current->key) {
+        delete new_node;
+        return m_root;
+      }
 
-    } else {
-      node->right = _insert(node->right, value);
+      Node<T> **child =
+          (value < current->key) ? &current->left : &current->right;
 
-      _adjust_node_parent(node->right, node);
+      if (*child) {
+        current = *child;
+      } else {
+        *child = new_node;
+        new_node->parent = current;
+        break;
+      }
     }
 
-    return _fixup_node(node);
+    for (Node<T> *n = new_node; n; n = n->parent) {
+      _fixup_node(n);
+    }
+
+    return m_root;
   }
 
-  Node<T> *_fixup_node(Node<T> *node) {
+  Node<T> *_fixup_node(Node<T> *node) override {
+    if (!node)
+      return node;
+
     InsertionContext<T> ctx(node);
-    switch (ctx.getInsertionCase()) {
+
+    if (!ctx.parent || ctx.parent->color != RED)
+      return node;
+
+    if (ctx.node->color != ctx.parent->color)
+      return node;
+
+    switch (ctx.getCase()) {
     case InsertionCase::ROOT:
       if (node == m_root)
         node->color = BLACK;
-      // else node are children of root and are Red, no fixup needeed
-      break;
+      return node;
 
     case InsertionCase::CASE1:
-
-      break;
+      ctx.parent->color = BLACK;
+      ctx.uncle->color = BLACK;
+      ctx.grandparent->color = (ctx.grandparent == m_root) ? BLACK : RED;
+      return node;
 
     case InsertionCase::CASE2A:
+      _rotate_left(ctx.parent);
+      return _rotate_right(ctx.grandparent);
+
     case InsertionCase::CASE2B:
-      break;
+      _rotate_right(ctx.parent);
+      return _rotate_left(ctx.grandparent);
 
     case InsertionCase::CASE3A:
-    case InsertionCase::CASE3B:
-      break;
-    }
-  }
+      return _rotate_right(ctx.grandparent);
 
-  Node<T> *_fixup_deletion(Node<T> *node) {}
+    case InsertionCase::CASE3B:
+      return _rotate_left(ctx.grandparent);
+    }
+
+    return node;
+  }
+  Node<T> *_fixup_deletion(Node<T> *node) override { return node; }
 
   Node<T> *_minimum(Node<T> *node) {
     if (!node->left)
@@ -264,7 +342,7 @@ private:
     return nullptr;
   }
 
-  Node<T> *_remove(Node<T> *node, T value) {}
+  Node<T> *_remove(Node<T> *node, T value) { return node; }
 
   Node<T> *_remove_node(Node<T> *node) {}
 
