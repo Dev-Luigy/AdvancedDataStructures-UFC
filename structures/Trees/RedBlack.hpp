@@ -289,6 +289,7 @@ private:
       _fixup_deletion(current);
       current = current->parent;
     }
+    return node;
   }
 
   Node<T> *_contains(Node<T> *node, int k) const {
