@@ -8,7 +8,7 @@
 enum class InsertionCase {
   ROOT, // No fix-up required (node is root or no grandparent)
 
-  // Parent and uncle are RED.
+  // Uncle are RED.
   // Recolor parent and uncle to BLACK, grandparent to RED.
   // This maintains black height but may introduce red-red violation higher
   // up.
@@ -35,10 +35,10 @@ enum class InsertionCase {
 
 template <typename T>
 struct InsertionContext : public FixupContext<InsertionCase> {
-  Node<T> *node;
-  Node<T> *parent;
-  Node<T> *grandparent;
-  Node<T> *uncle;
+  Node<T> *node{nullptr};
+  Node<T> *parent{nullptr};
+  Node<T> *grandparent{nullptr};
+  Node<T> *uncle{nullptr};
 
   InsertionContext(Node<T> *n)
       : node(n), parent(n ? n->parent : nullptr),
@@ -64,7 +64,7 @@ struct InsertionContext : public FixupContext<InsertionCase> {
   // In both cases, no fix-up is required.
   // For all other cases, grandparent, parent, and uncle are guaranteed to
   // exist.
-  InsertionCase getInsertionCase() const {
+  InsertionCase getCase() const override {
     if (!parent || !grandparent)
       return InsertionCase::ROOT;
 
