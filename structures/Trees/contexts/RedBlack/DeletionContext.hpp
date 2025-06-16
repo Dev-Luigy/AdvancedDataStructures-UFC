@@ -1,8 +1,8 @@
 #ifndef DELETION_CONTEXT_HPP
 #define DELETION_CONTEXT_HPP
 
-#include "../../../../interfaces/core/ContextNode.hpp"
 #include "../../../../interfaces/core/Node.hpp"
+#include "../../../../interfaces/trees/rotatable/FixupContext.hpp"
 #include <stdexcept>
 
 enum class DeletionCase {
@@ -34,7 +34,7 @@ enum class DeletionCase {
 };
 
 template <typename T>
-struct DeletionContext : public ContextNode<DeletionCase> {
+struct DeletionContext : public FixupContext<DeletionCase> {
   Node<T> *node;
   Node<T> *parent;
   Node<T> *grandparent;
