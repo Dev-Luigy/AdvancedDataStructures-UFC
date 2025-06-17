@@ -59,12 +59,19 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
     }
   }
 
-  bool isNodeLeftChildren() const { return parent && node->key < parent->key; }
+  void updateRelatives() {
+    parent = node ? node->parent : nullptr;
+    grandparent = parent ? parent->parent : nullptr;
+    uncle = (grandparent && parent)
+                ? (grandparent->left == parent ? grandparent->right
+                                               : grandparent->left)
+                : nullptr;
+  }
 
+  bool isNodeLeftChildren() const { return parent && node->key < parent->key; }
   bool isParentLeftChildren() const {
     return parent && grandparent && parent->key < grandparent->key;
   }
-
   bool isParentBlack() const { return parent->color == BLACK; }
   bool isNodeColorDifFromParent() const { return node->color != parent->color; }
   bool hasParent() const { return !!parent; }
@@ -124,40 +131,40 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
     Node<T> *inserted_node = node;
 
     while (node) {
-      InsertionContext<T> ctx(node, m_root); // Atualiza parent/uncle etc.
+      updateRelatives();
 
-      switch (ctx.getCase()) {
+      switch (getCase()) {
       case InsertionCase::ROOT:
-        if (ctx.node == m_root)
-          ctx.node->color = BLACK;
+        if (node == m_root)
+          node->color = BLACK;
         break;
 
       case InsertionCase::NOFIXUP:
         break;
 
       case InsertionCase::CASE1:
-        ctx.parent->color = BLACK;
-        ctx.uncle->color = BLACK;
-        if (ctx.grandparent != m_root)
-          ctx.grandparent->color = RED;
+        parent->color = BLACK;
+        uncle->color = BLACK;
+        if (grandparent != m_root)
+          grandparent->color = RED;
         break;
 
       case InsertionCase::CASE2A:
-        rotateLeft(ctx.parent);
-        rotateRight(ctx.grandparent);
+        rotateLeft(parent);
+        rotateRight(grandparent);
         break;
 
       case InsertionCase::CASE2B:
-        rotateRight(ctx.parent);
-        rotateLeft(ctx.grandparent);
+        rotateRight(parent);
+        rotateLeft(grandparent);
         break;
 
       case InsertionCase::CASE3A:
-        rotateRight(ctx.grandparent);
+        rotateRight(grandparent);
         break;
 
       case InsertionCase::CASE3B:
-        rotateLeft(ctx.grandparent);
+        rotateLeft(grandparent);
         break;
       }
 
@@ -167,4 +174,5 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
     return inserted_node;
   }
 };
+
 #endif
