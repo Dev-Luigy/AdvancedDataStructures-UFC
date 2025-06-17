@@ -281,7 +281,7 @@ private:
       }
     }
 
-    Node<T> *aux = _successor(current, current->key);
+    Node<T> *aux = _successor(current);
     current->key = aux->key;
     delete aux;
 
@@ -292,7 +292,7 @@ private:
     return node;
   }
 
-  Node<T> *_contains(Node<T> *node, int k) const {
+  Node<T> *_contains(Node<T> *node, const T &k) const {
     if (node == nullptr || node->key == k)
       return node;
 
