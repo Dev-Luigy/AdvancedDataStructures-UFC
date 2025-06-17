@@ -3,6 +3,7 @@
 #include "../../interfaces/core/Node.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
 #include "contexts/RedBlack/InsertionContext.hpp"
+#include "contexts/RedBlack/RotationContext.hpp"
 #include <iostream>
 #include <queue>
 
@@ -84,56 +85,18 @@ private:
 
   // RotatableTree methods:
   //
-  Node<T> *_rotate_left(Node<T> *old_parent) override {
-    Node<T> *new_parent = old_parent->right;
-    old_parent->right = new_parent->left;
+  Node<T> *_rotate_left(Node<T> *node) override {
+    RotationContext<T> ctx(node, m_root, LEFT);
+    ctx.rotate();
 
-    if (new_parent->left) {
-      new_parent->left->parent = old_parent;
-    }
-
-    new_parent->parent = old_parent->parent;
-
-    if (!old_parent->parent) {
-      m_root = new_parent;
-    } else if (old_parent == old_parent->parent->left) {
-      old_parent->parent->left = new_parent;
-    } else {
-      old_parent->parent->right = new_parent;
-    }
-
-    new_parent->left = old_parent;
-    old_parent->parent = new_parent;
-
-    std::swap(new_parent->color, old_parent->color);
-
-    return new_parent;
+    return node;
   }
 
-  Node<T> *_rotate_right(Node<T> *old_parent) override {
-    Node<T> *new_parent = old_parent->left;
-    old_parent->left = new_parent->right;
+  Node<T> *_rotate_right(Node<T> *node) override {
+    RotationContext<T> ctx(node, m_root, RIGHT);
+    ctx.rotate();
 
-    if (new_parent->right) {
-      new_parent->right->parent = old_parent;
-    }
-
-    new_parent->parent = old_parent->parent;
-
-    if (!old_parent->parent) {
-      m_root = new_parent;
-    } else if (old_parent == old_parent->parent->right) {
-      old_parent->parent->right = new_parent;
-    } else {
-      old_parent->parent->left = new_parent;
-    }
-
-    new_parent->right = old_parent;
-    old_parent->parent = new_parent;
-
-    std::swap(new_parent->color, old_parent->color);
-
-    return new_parent;
+    return node;
   }
 
   void show(Node<T> *node, std::string heranca) {
@@ -160,18 +123,7 @@ private:
   }
 
   void _adjust_node_parent(Node<T> *new_node, Node<T> *parent) {
-    if (new_node->parent == nullptr &&
-        new_node != m_root) { // this node was insert now.
-      new_node->parent = parent;
-    }
-
-    if (new_node->left == parent) { // resolves rotation problems;
-      parent->right = new_node->left != parent ? new_node->left : nullptr;
-      new_node->parent = parent->parent != new_node ? parent->parent : nullptr;
-    } else if (new_node->right == parent) {
-      parent->left = new_node->right != parent ? new_node->right : nullptr;
-      new_node->parent = parent->parent != new_node ? parent->parent : nullptr;
-    }
+    new_node->parent = parent;
   }
 
   Node<T> *_insert(Node<T> *node, T value) {
