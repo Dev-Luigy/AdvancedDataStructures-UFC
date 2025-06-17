@@ -133,16 +133,31 @@ private:
     new_node->parent = parent;
   }
 
+  template <typename CaseEnum>
+  void contextExecution(FixupContext<CaseEnum, T> &ctx) {
+    ctx.useCaseAction();
+    ctx.fixupAction([this](Node<T> *n) { return this->_rotate_left(n); },
+                    [this](Node<T> *n) { return this->_rotate_right(n); });
+  }
+
   Node<T> *_insert(Node<T> *node, T value) {
     if (!m_root) {
       return m_root = new Node<T>(value, BLACK);
     }
 
     InsertionCtx ctx(new Node<T>(value), m_root);
+    contextExecution(ctx);
 
-    ctx.useCaseAction();
-    ctx.fixupAction([this](Node<T> *n) { return this->_rotate_left(n); },
-                    [this](Node<T> *n) { return this->_rotate_right(n); });
+    return m_root;
+  }
+
+  Node<T> *_delete(Node<T> *node, T value) {
+    if (!m_root) {
+      return nullptr;
+    }
+
+    DeletionCtx ctx(_contains(m_root, value));
+    contextExecution(ctx);
 
     return m_root;
   }
