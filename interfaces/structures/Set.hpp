@@ -1,5 +1,5 @@
-#ifndef ISET_HPP
-#define ISET_HPP
+#ifndef SET_HPP
+#define SET_HPP
 
 template <typename T, typename AbstractSet> class Set {
 public:

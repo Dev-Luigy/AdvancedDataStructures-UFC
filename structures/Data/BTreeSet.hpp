@@ -1,5 +1,5 @@
-#ifndef SET_HPP
-#define SET_HPP
+#ifndef BTreeSET_HPP
+#define BTreeSET_HPP
 #include "../../interfaces/structures/Set.hpp"
 #include "../../interfaces/trees/Tree.hpp"
 #include "../Trees/AVLTree.hpp"
