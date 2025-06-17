@@ -135,26 +135,8 @@ private:
       return m_root = new Node<T>(value, BLACK);
     }
 
-    Node<T> *new_node = new Node<T>(value);
-    Node<T> *current = node;
-
-    while (current) {
-      if (value == current->key) {
-        delete new_node;
-        return m_root;
-      }
-
-      Node<T> **child =
-          (value < current->key) ? &current->left : &current->right;
-
-      if (*child) {
-        current = *child;
-      } else {
-        *child = new_node;
-        new_node->parent = current;
-        break;
-      }
-    }
+    InsertionContext<T> ctx(new Node<T>(value));
+    Node<T> *new_node = ctx.useCaseAction(m_root);
 
     for (Node<T> *n = new_node; n; n = n->parent) {
       _fixup_node(n);
