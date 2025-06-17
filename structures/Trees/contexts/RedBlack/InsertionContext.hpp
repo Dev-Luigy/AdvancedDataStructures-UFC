@@ -8,6 +8,9 @@
 enum class InsertionCase {
   ROOT, // No fix-up required (node is root or no grandparent)
 
+  // In this case, we are returning from recursion and we don't need fixups;
+  // if parent color is different of node color.
+  NOFIXUP,
   // Uncle are RED.
   // Recolor parent and uncle to BLACK, grandparent to RED.
   // This maintains black height but may introduce red-red violation higher
@@ -59,14 +62,22 @@ struct InsertionContext : public FixupContext<InsertionCase> {
     return parent && grandparent && parent->key < grandparent->key;
   }
 
+  bool isParentBlack() const { return parent->color == BLACK; }
+  bool isNodeColorDifFromParent() const { return node->color != parent->color; }
+  bool hasParent() const { return !!parent; }
+  bool hasGrandParent() const { return !!grandparent; }
+  bool hasUncle() const { return !!uncle; }
   // If the node has no parent or grandparent, it is the root
   // or a child directly under the root (in a tree of height 1).
   // In both cases, no fix-up is required.
   // For all other cases, grandparent, parent, and uncle are guaranteed to
   // exist.
   InsertionCase getCase() const override {
-    if (!parent || !grandparent)
+    if (!hasParent() || !hasGrandParent())
       return InsertionCase::ROOT;
+
+    if (isParentBlack() || isNodeColorDifFromParent())
+      return InsertionCase::NOFIXUP;
 
     if (uncle && uncle->color == RED)
       return InsertionCase::CASE1;

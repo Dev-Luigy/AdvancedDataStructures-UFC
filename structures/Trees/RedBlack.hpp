@@ -164,17 +164,13 @@ private:
       return node;
 
     InsertionContext<T> ctx(node);
-
-    if (!ctx.parent || ctx.parent->color != RED)
-      return node;
-
-    if (ctx.node->color != ctx.parent->color)
-      return node;
-
     switch (ctx.getCase()) {
     case InsertionCase::ROOT:
       if (node == m_root)
         node->color = BLACK;
+      return node;
+
+    case InsertionCase::NOFIXUP:
       return node;
 
     case InsertionCase::CASE1:
