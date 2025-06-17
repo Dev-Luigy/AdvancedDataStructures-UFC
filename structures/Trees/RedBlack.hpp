@@ -2,12 +2,15 @@
 #define REDBLACK_HPP
 #include "../../interfaces/core/Node.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
+#include "contexts/RedBlack/DeletionContext.hpp"
 #include "contexts/RedBlack/InsertionContext.hpp"
 #include "contexts/RedBlack/RotationContext.hpp"
 #include <iostream>
 #include <queue>
 
-template <typename T> class RedBlack : public RotatableTree<T> {
+template <typename T, typename InsertionCtx = InsertionContext<T>,
+          typename DeletionCtx = DeletionContext<T>>
+class RedBlack : public RotatableTree<T> {
 
 public:
   RedBlack() {};
@@ -135,54 +138,14 @@ private:
       return m_root = new Node<T>(value, BLACK);
     }
 
-    InsertionContext<T> ctx(new Node<T>(value));
-    Node<T> *new_node = ctx.useCaseAction(m_root);
+    InsertionCtx ctx(new Node<T>(value), m_root);
 
-    for (Node<T> *n = new_node; n; n = n->parent) {
-      _fixup_node(n);
-    }
+    ctx.useCaseAction();
+    ctx.fixupAction([this](Node<T> *n) { return this->_rotate_left(n); },
+                    [this](Node<T> *n) { return this->_rotate_right(n); });
 
     return m_root;
   }
-
-  Node<T> *_fixup_node(Node<T> *node) override {
-    if (!node)
-      return node;
-
-    InsertionContext<T> ctx(node);
-    switch (ctx.getCase()) {
-    case InsertionCase::ROOT:
-      if (node == m_root)
-        node->color = BLACK;
-      return node;
-
-    case InsertionCase::NOFIXUP:
-      return node;
-
-    case InsertionCase::CASE1:
-      ctx.parent->color = BLACK;
-      ctx.uncle->color = BLACK;
-      ctx.grandparent->color = (ctx.grandparent == m_root) ? BLACK : RED;
-      return node;
-
-    case InsertionCase::CASE2A:
-      _rotate_left(ctx.parent);
-      return _rotate_right(ctx.grandparent);
-
-    case InsertionCase::CASE2B:
-      _rotate_right(ctx.parent);
-      return _rotate_left(ctx.grandparent);
-
-    case InsertionCase::CASE3A:
-      return _rotate_right(ctx.grandparent);
-
-    case InsertionCase::CASE3B:
-      return _rotate_left(ctx.grandparent);
-    }
-
-    return node;
-  }
-  Node<T> *_fixup_deletion(Node<T> *node) override { return m_root; };
 
   Node<T> *_minimum(Node<T> *node) {
     if (!node->left)
@@ -269,10 +232,6 @@ private:
     current->key = aux->key;
     delete aux;
 
-    while (current) {
-      _fixup_deletion(current);
-      current = current->parent;
-    }
     return node;
   }
 
