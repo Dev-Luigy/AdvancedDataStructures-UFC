@@ -42,7 +42,9 @@ public:
     if (isEmpty()) {
       throw std::runtime_error("Tree is empty");
     }
-    Node<T> *succ = _successor(m_root, value);
+
+    Node<T> *node = _contains(m_root, value);
+    Node<T> *succ = _successor(node);
 
     return succ ? succ->key : value;
   };
@@ -50,7 +52,9 @@ public:
     if (isEmpty()) {
       throw std::runtime_error("Tree is empty");
     }
-    Node<T> *pred = _predecessor(m_root, value);
+
+    Node<T> *node = _contains(m_root, value);
+    Node<T> *pred = _predecessor(node);
 
     return pred ? pred->key : value;
   };
@@ -212,19 +216,18 @@ private:
       return _maximum(node->right);
   }
 
-  Node<T> *_successor(Node<T> *root, T value) {
+  Node<T> *_successor(Node<T> *root) {
     if (!root) {
       return nullptr;
     }
 
     Node<T> *successor = root;
 
-    if (!root->right) {
-      delete successor;
+    if (!successor->right) {
       return root;
     } else {
       successor = root->right;
-      while (successor && successor->left) {
+      while (successor->left) {
         successor = successor->left;
       }
     }
@@ -232,19 +235,18 @@ private:
     return successor;
   }
 
-  Node<T> *_predecessor(Node<T> *root, T value) {
+  Node<T> *_predecessor(Node<T> *root) {
     if (!root) {
       return nullptr;
     }
 
     Node<T> *predecessor = root;
 
-    if (!root->left) {
-      delete predecessor;
+    if (!predecessor->left) {
       return root;
     } else {
       predecessor = root->left;
-      while (predecessor && predecessor->right) {
+      while (predecessor->right) {
         predecessor = predecessor->right;
       }
     }
