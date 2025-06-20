@@ -4,17 +4,17 @@
 #include "../../../../interfaces/core/Node.hpp"
 #include <stdexcept>
 
-enum RotationDirection { LEFT, RIGHT };
+enum Direction { LEFT, RIGHT };
 
 template <typename T> struct RotationContext {
-  RotationDirection dir;
+  Direction dir;
   Node<T> *node{nullptr};
   Node<T> *children{nullptr};
   Node<T> *parent{nullptr};
   Node<T> *childrenOrphan{nullptr};
   Node<T> *m_root{nullptr};
 
-  RotationContext(Node<T> *n, Node<T> *m_root, RotationDirection dir)
+  RotationContext(Node<T> *n, Node<T> *m_root, Direction dir)
       : dir(dir), node(n), children(dir == LEFT ? n->right : n->left),
         parent(n->parent),
         childrenOrphan(dir == LEFT ? children->left : children->right),
