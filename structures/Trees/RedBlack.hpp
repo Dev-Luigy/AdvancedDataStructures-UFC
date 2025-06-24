@@ -1,7 +1,6 @@
 #ifndef REDBLACK_HPP
 #define REDBLACK_HPP
 #include "../../interfaces/core/Node.hpp"
-#include "../../interfaces/enum/RotationDirection.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
 #include "contexts/RedBlack/DeletionContext.hpp"
 #include "contexts/RedBlack/InsertionContext.hpp"

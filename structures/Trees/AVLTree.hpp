@@ -1,7 +1,6 @@
 #ifndef AVLTREE_HPP
 #define AVLTREE_HPP
 #include "../../interfaces/core/Node.hpp"
-#include "../../interfaces/enum/RotationDirection.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
 #include "contexts/AVLTree/DeletionContext.hpp"
 #include "contexts/AVLTree/InsertionContext.hpp"
