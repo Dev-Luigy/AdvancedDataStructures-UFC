@@ -83,7 +83,6 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
         if (parent->left) {
           grandParent = parent;
           parent = parent->left;
-          parent->parent = grandParent;
         } else {
           parent->left = node;
           break;
@@ -92,7 +91,6 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
         if (parent->right) {
           grandParent = parent;
           parent = parent->right;
-          parent->parent = grandParent;
         } else {
           parent->right = node;
           break;
