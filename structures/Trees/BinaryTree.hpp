@@ -109,23 +109,19 @@ private:
     Node<T> *current = root;
     Node<T> *predecessor = nullptr;
 
-    // 1. Encontra o nó com o valor desejado
     while (current && current->key != value) {
       if (value < current->key) {
         current = current->left;
       } else {
-        predecessor =
-            current; // Atualiza predecessor quando vamos para a direita
+        predecessor = current;
         current = current->right;
       }
     }
 
-    // 2. Se o valor não existe na árvore
     if (!current) {
       throw std::runtime_error("Value not found in tree");
     }
 
-    // 3. Se existe subárvore esquerda, predecessor é o máximo dela
     if (current->left) {
       Node<T> *temp = current->left;
       while (temp->right) {
@@ -134,8 +130,6 @@ private:
       return temp;
     }
 
-    // 4. Caso contrário, retorna o predecessor salvo (que pode ser o pai ou
-    // outro ancestral)
     return predecessor;
   }
 
