@@ -13,7 +13,6 @@ public:
   BTreeSet() : _elements() {}
   ~BTreeSet() {};
 
-  // Métodos da estrutura de dados
   void insert(T value) override { _elements.insert(value); };
   void remove(T value) override { _elements.remove(value); };
   bool contains(T k) const override { return _elements.contains(k); };
@@ -21,7 +20,6 @@ public:
   void show() override { _elements.show(); };
   void clear() override { _elements.clear(); };
 
-  // Operadores de conjuntos
   BTreeSet<T, TreeType>
   operator+(const BTreeSet<T, TreeType> &otherSet) const override {
     BTreeSet<T, TreeType> result;

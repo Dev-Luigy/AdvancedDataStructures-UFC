@@ -1,15 +1,14 @@
-#ifndef HEAP_HPP
-#define HEAP_HPP
+#ifndef BHEAP_HPP
+#define BHEAP_HPP
 #include "../../interfaces/core/DataStructure.hpp"
 
-// TODO: wee need to implement this DataStrcuture.
+// TODO: wee need to implement this DataStructure.
 template <typename T> class BinaryHeap : public DataStructure<T> {
 
 public:
   BinaryHeap() : _elements() {}
   ~BinaryHeap() {};
 
-  // Métodos da estrutura de dados
   void insert(T value) override { _elements.insert(value); };
   void remove(T value) override { _elements.remove(value); };
   T minimum() override { return _elements.minimum(); };
@@ -24,4 +23,5 @@ public:
 private:
   T _elements;
 };
+
 #endif
