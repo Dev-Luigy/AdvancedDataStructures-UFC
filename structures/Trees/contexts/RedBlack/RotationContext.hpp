@@ -1,5 +1,5 @@
-#ifndef ROTATION_CONTEXT_HPP
-#define ROTATION_CONTEXT_HPP
+#ifndef RED_BLACK_ROTATION_CONTEXT_HPP
+#define RED_BLACK_ROTATION_CONTEXT_HPP
 
 #include "../../../../interfaces/core/Node.hpp"
 #include <stdexcept>

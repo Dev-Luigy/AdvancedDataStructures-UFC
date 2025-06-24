@@ -1,5 +1,5 @@
-#ifndef INSERTION_CONTEXT_HPP
-#define INSERTION_CONTEXT_HPP
+#ifndef RED_BLACK_INSERTION_CONTEXT_HPP
+#define RED_BLACK_INSERTION_CONTEXT_HPP
 
 #include "../../../../interfaces/core/Node.hpp"
 #include "../../../../interfaces/trees/rotatable/FixupContext.hpp"
