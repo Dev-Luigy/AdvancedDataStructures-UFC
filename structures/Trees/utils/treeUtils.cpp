@@ -6,6 +6,11 @@
 #include <stack>
 #include <vector>
 
+template <typename T> int greater_children_height(Node<T> *node) {
+  return std::max(node->left ? node->left->height : 0,
+                  node->right ? node->right->height : 0);
+}
+
 template <typename T> static void printValues(Node<T> *node) {
   if (node) {
     std::cout << node->key << " ";
