@@ -22,7 +22,6 @@ public:
   T predecessor(T value) override { return _predecessor(m_root, value)->key; };
   bool contains(T k) override { return _contains(m_root, k) != nullptr; };
   bool isEmpty() override { return !size(); };
-  void show() override { _show(m_root, ""); };
   void clear() override { m_root = _clear(m_root); };
 
   // Tree methods
@@ -33,22 +32,6 @@ public:
 
 private:
   Node<T> *m_root{nullptr};
-
-  void _show(Node<T> *node, std::string heranca) {
-    if (node != nullptr && (node->left != nullptr || node->right != nullptr))
-      _show(node->right, heranca + "r");
-    for (int i = 0; i < (int)heranca.size() - 1; i++)
-      std::cout << (heranca[i] != heranca[i + 1] ? "│   " : "    ");
-    if (heranca != "")
-      std::cout << (heranca.back() == 'r' ? "┌───" : "└───");
-    if (node == nullptr) {
-      std::cout << "#" << std::endl;
-      return;
-    }
-    std::cout << node->key << std::endl;
-    if (node != nullptr && (node->left != nullptr || node->right != nullptr))
-      _show(node->left, heranca + "l");
-  }
 
   Node<T> *_insert(Node<T> *node, T value) {
     if (node == nullptr)

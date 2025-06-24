@@ -5,6 +5,8 @@
 #include "../core/Node.hpp"
 #include "../core/SortedNavigable.hpp"
 #include <functional>
+#include <iostream>
+#include <string>
 
 template <typename T>
 class Tree : public DataStructure<T>, public SortedNavigable<T> {
@@ -16,13 +18,15 @@ public:
   virtual int height() = 0;
   virtual int size() = 0;
   virtual void BFS() = 0;
+
   virtual ~Tree() {}
 
   // default implementation, so we don't need to redo.
+  void show() override { show(getRoot(), ""); }
+
   virtual void in_order(const Callback &func) const {
     inOrder(getRoot(), func);
   }
-
   virtual void pre_order(const Callback &func) const {
     preOrder(getRoot(), func);
   }
@@ -38,6 +42,23 @@ public:
   // I removes all these code in all trees because are the same code to all
   // implementations of this interface, i'm thinking if now this is a
   // interface..
+
+  static void show(Node<T> *node, std::string heranca) {
+    if (node != nullptr && (node->left != nullptr || node->right != nullptr))
+      show(node->right, heranca + "r");
+    for (int i = 0; i < (int)heranca.size() - 1; i++)
+      std::cout << (heranca[i] != heranca[i + 1] ? "│   " : "    ");
+    if (heranca != "")
+      std::cout << (heranca.back() == 'r' ? "┌───" : "└───");
+    if (node == nullptr) {
+      std::cout << "#" << std::endl;
+      return;
+    }
+    std::cout << node->key << std::endl;
+    if (node != nullptr && (node->left != nullptr || node->right != nullptr))
+      show(node->left, heranca + "l");
+  }
+
   static void preOrder(Node<T> *node, const Callback &func) {
     if (!node)
       return;

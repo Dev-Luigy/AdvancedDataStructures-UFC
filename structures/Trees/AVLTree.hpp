@@ -61,7 +61,6 @@ public:
   // - others datastructures methods.
   bool contains(T k) const override { return _contains(m_root, k) != nullptr; };
   bool isEmpty() override { return !_size(m_root); };
-  void show() override { show(m_root, ""); };
   void clear() override { m_root = _clear(m_root); };
 
   // Tree methods
@@ -101,31 +100,6 @@ private:
     return node;
   }
 
-  Node<T> *_fixup_node(Node<T> *node, T key) {
-    int bal = _balance(node);
-
-    if (bal > 1) {
-      if (key > node->right->key) {
-        return _rotate_left(node);
-      } else {
-        node->right = _rotate_right(node->right);
-        return _rotate_left(node);
-      }
-    }
-    // Left heavy
-    else if (bal < -1) {
-      if (key < node->left->key) {
-        return _rotate_right(node);
-      } else {
-        node->left = _rotate_left(node->left);
-        return _rotate_right(node);
-      }
-    }
-
-    node->height = 1 + greater_children_height(node);
-    return node;
-  }
-
   Node<T> *_fixup_deletion(Node<T> *node) {
     int bal = _balance(node);
 
@@ -150,22 +124,6 @@ private:
     node->height = 1 + greater_children_height(node);
 
     return node;
-  }
-
-  void show(Node<T> *node, std::string heranca) {
-    if (node != nullptr && (node->left != nullptr || node->right != nullptr))
-      show(node->right, heranca + "r");
-    for (int i = 0; i < (int)heranca.size() - 1; i++)
-      std::cout << (heranca[i] != heranca[i + 1] ? "│   " : "    ");
-    if (heranca != "")
-      std::cout << (heranca.back() == 'r' ? "┌───" : "└───");
-    if (node == nullptr) {
-      std::cout << "#" << std::endl;
-      return;
-    }
-    std::cout << node->key << std::endl;
-    if (node != nullptr && (node->left != nullptr || node->right != nullptr))
-      show(node->left, heranca + "l");
   }
 
   Node<T> *_insert(Node<T> *node, T value) {

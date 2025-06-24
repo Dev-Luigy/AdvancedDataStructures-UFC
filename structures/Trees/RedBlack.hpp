@@ -65,7 +65,6 @@ public:
   // - others datastructures methods.
   bool contains(T k) const override { return _contains(m_root, k) != nullptr; };
   bool isEmpty() override { return !_size(m_root); };
-  void show() override { show(m_root, ""); };
   void clear() override { m_root = _clear(m_root); };
 
   // Tree methods
@@ -83,10 +82,10 @@ private:
     if (!node)
       return 0;
 
-    return 1 + _greater_children_height(node);
+    return 1 + greater_children_height(node);
   }
 
-  int _greater_children_height(Node<T> *node) {
+  int greater_children_height(Node<T> *node) {
     return std::max(_height(node->left), _height(node->right));
   }
 
@@ -106,39 +105,12 @@ private:
     return node;
   }
 
-  void show(Node<T> *node, std::string heranca) {
-    if (node != nullptr && (node->left != nullptr || node->right != nullptr))
-      show(node->right, heranca + "r");
-
-    for (int i = 0; i < (int)heranca.size() - 1; i++)
-      std::cout << (heranca[i] != heranca[i + 1] ? "│   " : "    ");
-
-    if (!heranca.empty())
-      std::cout << (heranca.back() == 'r' ? "┌───" : "└───");
-
-    if (node == nullptr) {
-      std::cout << "#\n";
-      return;
-    }
-
-    std::string colorCode =
-        (node->color == NodeColor::RED) ? "\033[31m" : "\033[30m";
-    std::cout << colorCode << node->key << "\033[0m" << std::endl;
-
-    if (node->left != nullptr || node->right != nullptr)
-      show(node->left, heranca + "l");
-  }
-
   void _adjust_node_parent(Node<T> *new_node, Node<T> *parent) {
     new_node->parent = parent;
   }
 
   template <typename CaseEnum>
-  void contextExecution(FixupContext<CaseEnum, T> &ctx) {
-    ctx.useCaseAction();
-    ctx.fixupAction([this](Node<T> *n) { return this->_rotate_left(n); },
-                    [this](Node<T> *n) { return this->_rotate_right(n); });
-  }
+  void contextExecution(FixupContext<CaseEnum, T> &ctx) {}
 
   Node<T> *_insert(Node<T> *node, T value) {
     if (!m_root) {
@@ -146,18 +118,36 @@ private:
     }
 
     InsertionCtx ctx(new Node<T>(value), m_root);
-    contextExecution(ctx);
+    ctx.useCaseAction();
+    ctx.fixupAction([this](Node<T> *n) { return this->_rotate_left(n); },
+                    [this](Node<T> *n) { return this->_rotate_right(n); });
 
     return m_root;
   }
 
-  Node<T> *_delete(Node<T> *node, T value) {
-    if (!m_root) {
+  Node<T> *_remove(Node<T> *node, T value) {
+    if (!node)
       return nullptr;
+
+    Node<T> *target = _contains(node, value);
+    if (!target)
+      return node;
+
+    Node<T> *successor = _successor(target);
+
+    DeletionCtx ctx(target, (successor != target ? successor : nullptr),
+                    m_root);
+    m_root = ctx.useCaseAction();
+
+    while (ctx.DB && ctx.parent) {
+      m_root = ctx.fixupAction(
+          [this](Node<T> *n) { return this->_rotate_left(n); },
+          [this](Node<T> *n) { return this->_rotate_right(n); });
+      ctx.updateRelatives();
     }
 
-    DeletionCtx ctx(_contains(m_root, value));
-    contextExecution(ctx);
+    while (m_root && m_root->parent)
+      m_root = m_root->parent;
 
     return m_root;
   }
@@ -222,32 +212,6 @@ private:
       return nullptr;
     }
     return nullptr;
-  }
-
-  Node<T> *_remove(Node<T> *node, T value) {
-    if (!node) {
-      return nullptr;
-    }
-
-    Node<T> *current = node;
-
-    while (current) {
-      if (value < current->key)
-        current = current->left;
-      else if (value > current->key)
-        current = current->right;
-      else if (value == current->key) {
-        break;
-      } else {
-        return nullptr;
-      }
-    }
-
-    Node<T> *aux = _successor(current);
-    current->key = aux->key;
-    delete aux;
-
-    return node;
   }
 
   Node<T> *_contains(Node<T> *node, const T &k) const {
