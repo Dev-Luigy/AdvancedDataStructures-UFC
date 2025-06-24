@@ -2,9 +2,9 @@
 #define AVL_INSERTION_CONTEXT_HPP
 
 #include "../../../../interfaces/core/Node.hpp"
+#include "../../../../interfaces/enum/RotationDirection.hpp"
 #include "../../../../interfaces/trees/rotatable/FixupContext.hpp"
-#include "../../utils/treeUtils.cpp"
-#include <functional>
+#include "RotationContext.hpp"
 #include <stdexcept>
 
 enum class InsertionCase {
@@ -23,7 +23,7 @@ enum class InsertionCase {
   ZIGRIGHTLEFT,
 };
 
-template <typename T>
+template <typename T, typename RotationCtx = RotationContext<T>>
 struct InsertionContext : public FixupContext<InsertionCase, T> {
   int balance{0};
   T key{0};
@@ -105,9 +105,7 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
     return node;
   }
 
-  Node<T> *
-  fixupAction(std::function<Node<T> *(Node<T> *)> rotateLeft,
-              std::function<Node<T> *(Node<T> *)> rotateRight) override {
+  Node<T> *fixupAction() override {
 
     switch (getCase()) {
     case InsertionCase::ROOT:
@@ -115,18 +113,18 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
       return node;
 
     case InsertionCase::LINEARLEFT:
-      return rotateRight(node);
+      return RotationContext<T>::rotate(node, m_root, Direction::RIGHT);
 
     case InsertionCase::LINEARRIGHT:
-      return rotateLeft(node);
+      return RotationContext<T>::rotate(node, m_root, Direction::LEFT);
 
     case InsertionCase::ZIGRIGHTLEFT:
-      rotateRight(node->right);
-      return rotateLeft(node);
+      RotationContext<T>::rotate(node->right, m_root, Direction::RIGHT);
+      return RotationContext<T>::rotate(node, m_root, Direction::LEFT);
 
     case InsertionCase::ZIGLEFTRIGHT:
-      rotateLeft(node->left);
-      return rotateRight(node);
+      RotationContext<T>::rotate(node->left, m_root, Direction::LEFT);
+      return RotationContext<T>::rotate(node, m_root, Direction::RIGHT);
     }
 
     return node;

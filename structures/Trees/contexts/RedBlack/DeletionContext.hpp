@@ -2,6 +2,7 @@
 #define DELETION_CONTEXT_HPP
 
 #include "../../../../interfaces/core/Node.hpp"
+#include "../../../../interfaces/enum/RotationDirection.hpp"
 #include "../../../../interfaces/trees/rotatable/FixupContext.hpp"
 #include "RotationContext.hpp"
 #include <stdexcept>

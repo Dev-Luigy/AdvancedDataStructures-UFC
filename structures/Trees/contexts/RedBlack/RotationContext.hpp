@@ -2,55 +2,53 @@
 #define RED_BLACK_ROTATION_CONTEXT_HPP
 
 #include "../../../../interfaces/core/Node.hpp"
+#include "../../../../interfaces/enum/RotationDirection.hpp"
 #include <stdexcept>
-
-enum Direction { LEFT, RIGHT };
+#include <utility>
 
 template <typename T> struct RotationContext {
-  Direction dir;
-  Node<T> *node{nullptr};
-  Node<T> *children{nullptr};
-  Node<T> *parent{nullptr};
-  Node<T> *childrenOrphan{nullptr};
-  Node<T> *m_root{nullptr};
+  static Node<T> *rotate(Node<T> *node, Node<T> *&m_root, Direction dir) {
+    if (!node)
+      throw std::invalid_argument("Cannot rotate null node");
 
-  RotationContext(Node<T> *n, Node<T> *m_root, Direction dir)
-      : dir(dir), node(n), children(dir == LEFT ? n->right : n->left),
-        parent(n->parent),
-        childrenOrphan(dir == LEFT ? children->left : children->right),
-        m_root(m_root) {
-    if (!node) {
-      throw std::invalid_argument("Cannot create context from nullptr node");
-    }
-  }
+    Node<T> *parent = node->parent;
+    Node<T> *children = (dir == LEFT) ? node->right : node->left;
 
-  void rotate() {
+    if (!children)
+      throw std::logic_error("Cannot rotate without child");
+
+    Node<T> *childrenOrphan = (dir == LEFT) ? children->left : children->right;
+
+    // Rotação
     if (dir == LEFT) {
       node->right = childrenOrphan;
+      if (childrenOrphan)
+        childrenOrphan->parent = node;
+
       children->left = node;
-
-      node->parent = children;
-      children->parent = parent;
-
     } else {
       node->left = childrenOrphan;
-      children->right = node;
+      if (childrenOrphan)
+        childrenOrphan->parent = node;
 
-      node->parent = children;
-      children->parent = parent;
+      children->right = node;
     }
 
-    if (node == m_root)
+    node->parent = children;
+    children->parent = parent;
+
+    if (node == m_root) {
       m_root = children;
-    else { // Have to adjust parent;
-      if (node == parent->left) {
+    } else if (parent) {
+      if (parent->left == node)
         parent->left = children;
-      } else {
+      else
         parent->right = children;
-      }
     }
 
     std::swap(children->color, node->color);
+
+    return children;
   }
 };
 

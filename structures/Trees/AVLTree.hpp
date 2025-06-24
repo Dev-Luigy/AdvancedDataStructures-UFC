@@ -1,6 +1,7 @@
 #ifndef AVLTREE_HPP
 #define AVLTREE_HPP
 #include "../../interfaces/core/Node.hpp"
+#include "../../interfaces/enum/RotationDirection.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
 #include "contexts/AVLTree/DeletionContext.hpp"
 #include "contexts/AVLTree/InsertionContext.hpp"
@@ -9,10 +10,13 @@
 #include <iostream>
 #include <queue>
 
-// WARN: We need to verify if this implementation are correct.
 template <typename T, typename InsertionCtx = InsertionContext<T>,
-          typename DeletionCtx = DeletionContext<T>>
-class AVLTree : public RotatableTree<T> {
+          typename DeletionCtx = DeletionContext<T>,
+          template <typename> class RotationCtx = RotationContext>
+class AVLTree : public RotatableTree<T, RotationCtx> {
+  using Base = RotatableTree<T, RotationCtx>;
+  using Base::_rotate_left;
+  using Base::_rotate_right;
 
 public:
   AVLTree() {};
@@ -68,6 +72,7 @@ public:
   int height() override { return _tree_height(m_root); };
   void BFS() override { _BFS(m_root); };
   Node<T> *getRoot() const override { return m_root; }
+  Node<T> *&getRootRef() override { return m_root; }
 
 private:
   Node<T> *m_root{nullptr};
@@ -84,20 +89,6 @@ private:
   // AVL methods
   int _balance(Node<T> *node) {
     return _height(node->right) - _height(node->left);
-  }
-
-  Node<T> *_rotate_left(Node<T> *node) override {
-    RotationContext<T> ctx(node, m_root, LEFT);
-    ctx.rotate();
-
-    return node;
-  }
-
-  Node<T> *_rotate_right(Node<T> *node) override {
-    RotationContext<T> ctx(node, m_root, RIGHT);
-    ctx.rotate();
-
-    return node;
   }
 
   Node<T> *_fixup_deletion(Node<T> *node) {
@@ -132,8 +123,7 @@ private:
 
     while (inserted) {
       InsertionCtx ctx(inserted, m_root, value, _balance(inserted));
-      ctx.fixupAction([this](Node<T> *n) { return this->_rotate_left(n); },
-                      [this](Node<T> *n) { return this->_rotate_right(n); });
+      ctx.fixupAction();
 
       inserted->height = 1 + greater_children_height(inserted);
       inserted = inserted->parent;

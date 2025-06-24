@@ -1,6 +1,7 @@
 #ifndef REDBLACK_HPP
 #define REDBLACK_HPP
 #include "../../interfaces/core/Node.hpp"
+#include "../../interfaces/enum/RotationDirection.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
 #include "contexts/RedBlack/DeletionContext.hpp"
 #include "contexts/RedBlack/InsertionContext.hpp"
@@ -9,8 +10,12 @@
 #include <queue>
 
 template <typename T, typename InsertionCtx = InsertionContext<T>,
-          typename DeletionCtx = DeletionContext<T>>
-class RedBlack : public RotatableTree<T> {
+          typename DeletionCtx = DeletionContext<T>,
+          template <typename> class RotationCtx = RotationContext>
+class RedBlack : public RotatableTree<T, RotationCtx> {
+  using Base = RotatableTree<T, RotationCtx>;
+  using Base::_rotate_left;
+  using Base::_rotate_right;
 
 public:
   RedBlack() {};
@@ -72,6 +77,7 @@ public:
   int height() override { return _tree_height(m_root); };
   void BFS() override { _BFS(m_root); };
   Node<T> *getRoot() const override { return m_root; }
+  Node<T> *&getRootRef() override { return m_root; }
 
 private:
   Node<T> *m_root{nullptr};
@@ -89,22 +95,6 @@ private:
     return std::max(_height(node->left), _height(node->right));
   }
 
-  // RotatableTree methods:
-  //
-  Node<T> *_rotate_left(Node<T> *node) override {
-    RotationContext<T> ctx(node, m_root, LEFT);
-    ctx.rotate();
-
-    return node;
-  }
-
-  Node<T> *_rotate_right(Node<T> *node) override {
-    RotationContext<T> ctx(node, m_root, RIGHT);
-    ctx.rotate();
-
-    return node;
-  }
-
   void _adjust_node_parent(Node<T> *new_node, Node<T> *parent) {
     new_node->parent = parent;
   }
@@ -119,38 +109,12 @@ private:
 
     InsertionCtx ctx(new Node<T>(value), m_root);
     ctx.useCaseAction();
-    ctx.fixupAction([this](Node<T> *n) { return this->_rotate_left(n); },
-                    [this](Node<T> *n) { return this->_rotate_right(n); });
+    ctx.fixupAction();
 
     return m_root;
   }
 
-  Node<T> *_remove(Node<T> *node, T value) {
-    if (!node)
-      return nullptr;
-
-    Node<T> *target = _contains(node, value);
-    if (!target)
-      return node;
-
-    Node<T> *successor = _successor(target);
-
-    DeletionCtx ctx(target, (successor != target ? successor : nullptr),
-                    m_root);
-    m_root = ctx.useCaseAction();
-
-    while (ctx.DB && ctx.parent) {
-      m_root = ctx.fixupAction(
-          [this](Node<T> *n) { return this->_rotate_left(n); },
-          [this](Node<T> *n) { return this->_rotate_right(n); });
-      ctx.updateRelatives();
-    }
-
-    while (m_root && m_root->parent)
-      m_root = m_root->parent;
-
-    return m_root;
-  }
+  Node<T> *_remove(Node<T> *node, T value) {}
 
   Node<T> *_minimum(Node<T> *node) {
     if (!node->left)

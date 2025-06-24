@@ -1,0 +1,6 @@
+#ifndef ROTATION_DIRECTION_HPP
+#define ROTATION_DIRECTION_HPP
+
+enum Direction { LEFT, RIGHT };
+
+#endif // !ROTATION_DIRECTION_HPP

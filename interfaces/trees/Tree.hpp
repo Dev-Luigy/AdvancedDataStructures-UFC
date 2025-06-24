@@ -14,6 +14,7 @@ public:
   using Callback = std::function<void(Node<T> *)>;
 
   virtual Node<T> *getRoot() const = 0;
+  virtual Node<T> *&getRootRef() = 0;
 
   virtual int height() = 0;
   virtual int size() = 0;
@@ -22,7 +23,7 @@ public:
   virtual ~Tree() {}
 
   // default implementation, so we don't need to redo.
-  void show() override { show(getRoot(), ""); }
+  virtual void show() override { show(getRoot(), ""); }
 
   virtual void in_order(const Callback &func) const {
     inOrder(getRoot(), func);
