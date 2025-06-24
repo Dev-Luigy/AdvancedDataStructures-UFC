@@ -10,18 +10,24 @@ template <typename T> struct Node {
   Node<T> *parent{nullptr};
   NodeColor color{RED};
 
+  // for binary
   Node(T key) : key(key) {};
-  Node(T key, NodeColor color) : key(key), color(color) {};
-  Node(T key, Node<T> *parent, NodeColor color)
-      : key(key), parent(parent), color(color) {};
   Node(T key, Node<T> *left) : key(key), left(left) {};
   Node(T key, Node<T> *left, Node<T> *right)
       : key(key), left(left), right(right) {};
 
-  Node(T key, Node<T> *left, Node<T> *right, Node<T> *parent)
-      : key(key), left(left), right(right), parent(parent) {};
+  // for RedBlack
+  Node(T key, NodeColor color) : key(key), color(color) {};
+  Node(T key, Node<T> *parent, NodeColor color)
+      : key(key), parent(parent), color(color) {};
   Node(T key, Node<T> *left, Node<T> *right, Node<T> *parent, NodeColor color)
       : key(key), left(left), right(right), parent(parent), color(color) {};
+
+  // for AVL
+  Node(T key, Node<T> *left, Node<T> *right, Node<T> *parent)
+      : key(key), left(left), right(right), parent(parent) {};
+
+  // destructor.
   ~Node() {};
 };
 
