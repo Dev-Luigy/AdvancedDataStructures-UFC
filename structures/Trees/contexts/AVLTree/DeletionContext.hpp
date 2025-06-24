@@ -1,9 +1,10 @@
-#ifndef DELETION_CONTEXT_HPP
-#define DELETION_CONTEXT_HPP
+#ifndef AVL_DELETION_CONTEXT_HPP
+#define AVL_DELETION_CONTEXT_HPP
 
 #include "../../../../interfaces/core/Node.hpp"
 #include "../../../../interfaces/trees/rotatable/FixupContext.hpp"
 #include "RotationContext.hpp"
+#include <iostream>
 #include <stdexcept>
 
 enum class DeletionCase {
@@ -205,6 +206,7 @@ struct DeletionContext : public FixupContext<DeletionCase, T> {
       }
     }
 
+    std::cout << "here" << std::endl;
     return DeletionCase::CASE1A;
   }
 
