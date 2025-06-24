@@ -2,11 +2,17 @@
 #define AVLTREE_HPP
 #include "../../interfaces/core/Node.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
+#include "contexts/AVLTree/DeletionContext.hpp"
+#include "contexts/AVLTree/InsertionContext.hpp"
+#include "contexts/AVLTree/RotationContext.hpp"
+#include "utils/treeUtils.cpp"
 #include <iostream>
 #include <queue>
 
 // WARN: We need to verify if this implementation are correct.
-template <typename T> class AVLTree : public RotatableTree<T> {
+template <typename T, typename InsertionCtx = InsertionContext<T>,
+          typename DeletionCtx = DeletionContext<T>>
+class AVLTree : public RotatableTree<T> {
 
 public:
   AVLTree() {};
@@ -73,43 +79,31 @@ private:
     if (!node)
       return 0;
 
-    return 1 + _greater_children_height(node);
+    return 1 + greater_children_height(node);
   }
 
-  int _greater_children_height(Node<T> *node) {
-    return std::max(_height(node->left), _height(node->right));
-  }
   // AVL methods
   int _balance(Node<T> *node) {
     return _height(node->right) - _height(node->left);
   }
 
-  Node<T> *_rotate_left(Node<T> *node) {
-    Node<T> *u = node->right;
-    node->right = u->left;
-    u->left = node;
+  Node<T> *_rotate_left(Node<T> *node) override {
+    RotationContext<T> ctx(node, m_root, LEFT);
+    ctx.rotate();
 
-    node->height = 1 + _greater_children_height(node);
-    u->height = 1 + _greater_children_height(u);
-
-    return u;
+    return node;
   }
 
-  Node<T> *_rotate_right(Node<T> *node) {
-    Node<T> *u = node->left;
-    node->left = u->right;
-    u->right = node;
+  Node<T> *_rotate_right(Node<T> *node) override {
+    RotationContext<T> ctx(node, m_root, RIGHT);
+    ctx.rotate();
 
-    node->height = 1 + _greater_children_height(node);
-    u->height = 1 + _greater_children_height(u);
-
-    return u;
+    return node;
   }
 
   Node<T> *_fixup_node(Node<T> *node, T key) {
     int bal = _balance(node);
 
-    // Right heavy
     if (bal > 1) {
       if (key > node->right->key) {
         return _rotate_left(node);
@@ -128,7 +122,7 @@ private:
       }
     }
 
-    node->height = 1 + _greater_children_height(node);
+    node->height = 1 + greater_children_height(node);
     return node;
   }
 
@@ -153,7 +147,7 @@ private:
       }
     }
 
-    node->height = 1 + _greater_children_height(node);
+    node->height = 1 + greater_children_height(node);
 
     return node;
   }
@@ -175,19 +169,19 @@ private:
   }
 
   Node<T> *_insert(Node<T> *node, T value) {
-    if (node == nullptr)
-      return new Node<T>(value);
+    InsertionCtx ctx(new Node<T>(value), m_root, value, 0);
+    Node<T> *inserted = ctx.useCaseAction();
 
-    if (node->key == value)
-      return node;
-    if (node->key > value)
-      node->left = _insert(node->left, value);
-    else if (node->key < value)
-      node->right = _insert(node->right, value);
+    while (inserted) {
+      InsertionCtx ctx(inserted, m_root, value, _balance(inserted));
+      ctx.fixupAction([this](Node<T> *n) { return this->_rotate_left(n); },
+                      [this](Node<T> *n) { return this->_rotate_right(n); });
 
-    node = _fixup_node(node, value);
+      inserted->height = 1 + greater_children_height(inserted);
+      inserted = inserted->parent;
+    }
 
-    return node;
+    return inserted ? inserted : m_root;
   }
 
   Node<T> *_minimum(Node<T> *node) {
