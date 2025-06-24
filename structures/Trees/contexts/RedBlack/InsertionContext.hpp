@@ -3,7 +3,7 @@
 
 #include "../../../../interfaces/core/Node.hpp"
 #include "../../../../interfaces/trees/rotatable/FixupContext.hpp"
-#include <functional>
+#include "RotationContext.hpp"
 #include <stdexcept>
 
 enum class InsertionCase {
@@ -38,17 +38,18 @@ enum class InsertionCase {
   CASE3B
 };
 
-template <typename T>
+template <typename T, typename RotationCtx = RotationContext<T>>
 struct InsertionContext : public FixupContext<InsertionCase, T> {
   Node<T> *node{nullptr};
   Node<T> *parent{nullptr};
   Node<T> *grandparent{nullptr};
   Node<T> *uncle{nullptr};
-  Node<T> *m_root{nullptr};
+  Node<T> *&m_root;
 
-  InsertionContext(Node<T> *n, Node<T> *m_root)
+  InsertionContext(Node<T> *n, Node<T> *&m_root)
       : node(n), parent(n ? n->parent : nullptr),
-        grandparent(parent ? parent->parent : nullptr), m_root(m_root) {
+        grandparent(parent ? parent->parent : nullptr), uncle(nullptr),
+        m_root(m_root) {
     if (!node) {
       throw std::invalid_argument("Cannot create context from nullptr node");
     }
@@ -78,11 +79,6 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
   bool hasGrandParent() const { return !!grandparent; }
   bool hasUncle() const { return !!uncle; }
 
-  // If the node has no parent or grandparent, it is the root
-  // or a child directly under the root (in a tree of height 1).
-  // In both cases, no fix-up is required.
-  // For all other cases, grandparent, parent, and uncle are guaranteed to
-  // exist.
   InsertionCase getCase() const override {
     if (!hasParent() || !hasGrandParent())
       return InsertionCase::ROOT;
@@ -125,9 +121,7 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
     return node;
   }
 
-  Node<T> *
-  fixupAction(std::function<Node<T> *(Node<T> *)> rotateLeft,
-              std::function<Node<T> *(Node<T> *)> rotateRight) override {
+  Node<T> *fixupAction() override {
     Node<T> *inserted_node = node;
 
     while (node) {
@@ -150,21 +144,21 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
         break;
 
       case InsertionCase::CASE2A:
-        rotateLeft(parent);
-        rotateRight(grandparent);
+        RotationCtx::rotate(parent, m_root, Direction::LEFT);
+        RotationCtx::rotate(grandparent, m_root, Direction::RIGHT);
         break;
 
       case InsertionCase::CASE2B:
-        rotateRight(parent);
-        rotateLeft(grandparent);
+        RotationCtx::rotate(parent, m_root, Direction::RIGHT);
+        RotationCtx::rotate(grandparent, m_root, Direction::LEFT);
         break;
 
       case InsertionCase::CASE3A:
-        rotateRight(grandparent);
+        RotationCtx::rotate(grandparent, m_root, Direction::RIGHT);
         break;
 
       case InsertionCase::CASE3B:
-        rotateLeft(grandparent);
+        RotationCtx::rotate(grandparent, m_root, Direction::LEFT);
         break;
       }
 
