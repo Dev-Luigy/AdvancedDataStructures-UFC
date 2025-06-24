@@ -47,16 +47,23 @@ public:
   static void show(Node<T> *node, std::string heranca) {
     if (node != nullptr && (node->left != nullptr || node->right != nullptr))
       show(node->right, heranca + "r");
+
     for (int i = 0; i < (int)heranca.size() - 1; i++)
       std::cout << (heranca[i] != heranca[i + 1] ? "│   " : "    ");
-    if (heranca != "")
+
+    if (!heranca.empty())
       std::cout << (heranca.back() == 'r' ? "┌───" : "└───");
+
     if (node == nullptr) {
-      std::cout << "#" << std::endl;
+      std::cout << "#\n";
       return;
     }
-    std::cout << node->key << std::endl;
-    if (node != nullptr && (node->left != nullptr || node->right != nullptr))
+
+    std::string colorCode =
+        (node->color == NodeColor::RED) ? "\033[31m" : "\033[30m";
+    std::cout << colorCode << node->key << "\033[0m" << std::endl;
+
+    if (node->left != nullptr || node->right != nullptr)
       show(node->left, heranca + "l");
   }
 
