@@ -1,5 +1,6 @@
 #ifndef AVLTREE_HPP
 #define AVLTREE_HPP
+
 #include "../../interfaces/core/Node.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
 #include "contexts/AVLTree/DeletionContext.hpp"
@@ -8,6 +9,7 @@
 #include "utils/treeUtils.cpp"
 #include <iostream>
 #include <queue>
+#include <utility>
 
 template <typename T, typename InsertionCtx = AVLInsertionContext<T>,
           typename DeletionCtx = AVLDeletionContext<T>,
@@ -16,6 +18,7 @@ class AVLTree : public RotatableTree<T, RotationCtx> {
   using Base = RotatableTree<T, RotationCtx>;
   using Base::_rotate_left;
   using Base::_rotate_right;
+
   using KeyType = decltype(KeyExtractor<T>::getKey(std::declval<T>()));
 
 public:
@@ -63,7 +66,11 @@ public:
   };
 
   // - others datastructures methods.
-  bool contains(T k) const override { return _contains(m_root, k) != nullptr; };
+  bool contains(T k) const override {
+    KeyType key = KeyExtractor<T>::getKey(k);
+    return _contains(m_root, key) != nullptr;
+  };
+
   bool isEmpty() override { return !_size(m_root); };
   void clear() override { m_root = _clear(m_root); };
 
@@ -102,13 +109,13 @@ private:
       if (_balance(node->right) >= 0) {
         return _rotate_left(node);
       } else {
-        node->right = _rotate_right(node);
+        node->right = _rotate_right(node->right);
         return _rotate_left(node);
       }
     }
 
     else if (bal < -1) {
-      if (_balance(node->left) >= 0) {
+      if (_balance(node->left) <= 0) {
         return _rotate_right(node);
       } else {
         node->left = _rotate_left(node->left);
@@ -136,6 +143,21 @@ private:
     return inserted ? inserted : m_root;
   }
 
+  Node<T> *_contains(Node<T> *node, const KeyType &key) const {
+    if (node == nullptr)
+      return nullptr;
+
+    KeyType nodeKey = KeyExtractor<T>::getKey(node->key);
+
+    if (key == nodeKey)
+      return node;
+
+    if (key < nodeKey)
+      return _contains(node->left, key);
+    else
+      return _contains(node->right, key);
+  }
+
   Node<T> *_minimum(Node<T> *node) {
     if (!node->left)
       return node;
@@ -155,11 +177,12 @@ private:
       return nullptr;
     }
 
+    KeyType valueKey = KeyExtractor<T>::getKey(value);
     Node<T> *current = root;
     Node<T> *successor = nullptr;
 
-    while (current && current->key != value) {
-      if (value < current->key) {
+    while (current && KeyExtractor<T>::getKey(current->key) != valueKey) {
+      if (valueKey < KeyExtractor<T>::getKey(current->key)) {
         successor = current;
         current = current->left;
       } else {
@@ -187,11 +210,12 @@ private:
       return nullptr;
     }
 
+    KeyType valueKey = KeyExtractor<T>::getKey(value);
     Node<T> *current = root;
     Node<T> *predecessor = nullptr;
 
-    while (current && current->key != value) {
-      if (value < current->key) {
+    while (current && KeyExtractor<T>::getKey(current->key) != valueKey) {
+      if (valueKey < KeyExtractor<T>::getKey(current->key)) {
         current = current->left;
       } else {
         predecessor = current;
@@ -228,11 +252,15 @@ private:
     if (node == nullptr)
       return nullptr;
 
-    if (value < node->key) {
+    KeyType valueKey = KeyExtractor<T>::getKey(value);
+    KeyType nodeKey = KeyExtractor<T>::getKey(node->key);
+
+    if (valueKey < nodeKey) {
       node->left = _remove(node->left, value);
-    } else if (value > node->key) {
+    } else if (valueKey > nodeKey) {
       node->right = _remove(node->right, value);
     } else {
+      // Node found
       if (node->left == nullptr) {
         Node<T> *temp = node->right;
         delete node;
@@ -250,39 +278,6 @@ private:
     return _fixup_deletion(node);
   }
 
-  Node<T> *_remove_node(Node<T> *node) {
-    if (node->right == nullptr)
-      return node->left;
-
-    Node<T> *parent, *q;
-    parent = node;
-    q = parent->right;
-
-    while (q->left != nullptr) {
-      parent = q;
-      q = q->left;
-    }
-
-    if (parent != node) {
-      parent->left = q->left;
-      q->right = node->right;
-    }
-    q->left = node->left;
-
-    delete node;
-    return q;
-  }
-
-  Node<T> *_contains(Node<T> *node, int k) const {
-    if (node == nullptr || node->key == k)
-      return node;
-
-    if (k < node->key)
-      return _contains(node->left, k);
-    else
-      return _contains(node->right, k);
-  }
-
   void _BFS(Node<T> *node) {
     if (node == nullptr)
       return;
@@ -290,14 +285,17 @@ private:
     std::queue<Node<T> *> nodeSequence;
     nodeSequence.push(node);
 
+    bool first = true;
     while (!nodeSequence.empty()) {
       Node<T> *aux = nodeSequence.front();
       nodeSequence.pop();
 
-      if (aux == m_root)
+      if (first) {
         std::cout << aux->key;
-      else
+        first = false;
+      } else {
         std::cout << " " << aux->key;
+      }
 
       if (aux->left)
         nodeSequence.push(aux->left);

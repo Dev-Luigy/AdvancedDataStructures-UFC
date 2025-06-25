@@ -95,9 +95,6 @@ private:
     new_node->parent = parent;
   }
 
-  template <typename CaseEnum>
-  void contextExecution(FixupContext<CaseEnum, T> &ctx) {}
-
   Node<T> *_insert(Node<T> *node, T value) {
     if (!m_root) {
       return m_root = new Node<T>(value, BLACK);
