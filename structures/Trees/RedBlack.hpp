@@ -1,6 +1,7 @@
 #ifndef REDBLACK_HPP
 #define REDBLACK_HPP
 #include "../../interfaces/core/Node.hpp"
+#include "../../interfaces/enum/NodeColor.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
 #include "contexts/RedBlack/DeletionContext.hpp"
 #include "contexts/RedBlack/InsertionContext.hpp"
@@ -113,7 +114,151 @@ private:
     return m_root;
   }
 
-  Node<T> *_remove(Node<T> *node, T value) {}
+  Node<T> *_remove(Node<T> *node, T value) {
+    if (!node)
+      return nullptr;
+
+    Node<T> *nodeToDelete = _contains(m_root, value);
+    if (!nodeToDelete)
+      return m_root;
+
+    Node<T> *actualNodeBeingDeleted = nodeToDelete;
+    Node<T> *replacementNode = nullptr;
+    NodeColor originalColor = actualNodeBeingDeleted->color;
+
+    if (!nodeToDelete->left) {
+      replacementNode = nodeToDelete->right;
+      _transplant(nodeToDelete, nodeToDelete->right);
+    } else if (!nodeToDelete->right) {
+      replacementNode = nodeToDelete->left;
+      _transplant(nodeToDelete, nodeToDelete->left);
+    } else {
+      actualNodeBeingDeleted = _minimum(nodeToDelete->right);
+      originalColor = actualNodeBeingDeleted->color;
+      replacementNode = actualNodeBeingDeleted->right;
+
+      if (actualNodeBeingDeleted->parent == nodeToDelete) {
+        if (replacementNode)
+          replacementNode->parent = actualNodeBeingDeleted;
+      } else {
+        _transplant(actualNodeBeingDeleted, actualNodeBeingDeleted->right);
+        actualNodeBeingDeleted->right = nodeToDelete->right;
+        if (actualNodeBeingDeleted->right)
+          actualNodeBeingDeleted->right->parent = actualNodeBeingDeleted;
+      }
+
+      _transplant(nodeToDelete, actualNodeBeingDeleted);
+      actualNodeBeingDeleted->left = nodeToDelete->left;
+      if (actualNodeBeingDeleted->left)
+        actualNodeBeingDeleted->left->parent = actualNodeBeingDeleted;
+      actualNodeBeingDeleted->color = nodeToDelete->color;
+    }
+
+    delete nodeToDelete;
+
+    if (originalColor == BLACK && replacementNode) {
+      _delete_fixup(replacementNode);
+    }
+
+    Node<T> *newRoot = m_root;
+    if (newRoot) {
+      while (newRoot->parent) {
+        newRoot = newRoot->parent;
+      }
+    }
+
+    return newRoot;
+  }
+
+  void _transplant(Node<T> *nodeToReplace, Node<T> *replacementNode) {
+    if (!nodeToReplace->parent) {
+      m_root = replacementNode;
+    } else if (nodeToReplace == nodeToReplace->parent->left) {
+      nodeToReplace->parent->left = replacementNode;
+    } else {
+      nodeToReplace->parent->right = replacementNode;
+    }
+
+    if (replacementNode) {
+      replacementNode->parent = nodeToReplace->parent;
+    }
+  }
+
+  void _delete_fixup(Node<T> *currentNode) {
+    while (currentNode != m_root && currentNode &&
+           currentNode->color == BLACK) {
+      if (currentNode == currentNode->parent->left) {
+        Node<T> *siblingNode = currentNode->parent->right;
+
+        if (siblingNode && siblingNode->color == RED) {
+          siblingNode->color = BLACK;
+          currentNode->parent->color = RED;
+          _rotate_left(currentNode->parent);
+          siblingNode = currentNode->parent->right;
+        }
+
+        if (siblingNode &&
+            (!siblingNode->left || siblingNode->left->color == BLACK) &&
+            (!siblingNode->right || siblingNode->right->color == BLACK)) {
+          siblingNode->color = RED;
+          currentNode = currentNode->parent;
+        } else if (siblingNode) {
+          if (!siblingNode->right || siblingNode->right->color == BLACK) {
+            if (siblingNode->left)
+              siblingNode->left->color = BLACK;
+            siblingNode->color = RED;
+            _rotate_right(siblingNode);
+            siblingNode = currentNode->parent->right;
+          }
+
+          siblingNode->color = currentNode->parent->color;
+          currentNode->parent->color = BLACK;
+          if (siblingNode->right)
+            siblingNode->right->color = BLACK;
+          _rotate_left(currentNode->parent);
+          currentNode = m_root;
+        } else {
+          break;
+        }
+      } else {
+        Node<T> *siblingNode = currentNode->parent->left;
+
+        if (siblingNode && siblingNode->color == RED) {
+          siblingNode->color = BLACK;
+          currentNode->parent->color = RED;
+          _rotate_right(currentNode->parent);
+          siblingNode = currentNode->parent->left;
+        }
+
+        if (siblingNode &&
+            (!siblingNode->right || siblingNode->right->color == BLACK) &&
+            (!siblingNode->left || siblingNode->left->color == BLACK)) {
+          siblingNode->color = RED;
+          currentNode = currentNode->parent;
+        } else if (siblingNode) {
+          if (!siblingNode->left || siblingNode->left->color == BLACK) {
+            if (siblingNode->right)
+              siblingNode->right->color = BLACK;
+            siblingNode->color = RED;
+            _rotate_left(siblingNode);
+            siblingNode = currentNode->parent->left;
+          }
+
+          siblingNode->color = currentNode->parent->color;
+          currentNode->parent->color = BLACK;
+          if (siblingNode->left)
+            siblingNode->left->color = BLACK;
+          _rotate_right(currentNode->parent);
+          currentNode = m_root;
+        } else {
+          break;
+        }
+      }
+    }
+
+    if (currentNode)
+      currentNode->color = BLACK;
+  }
 
   Node<T> *_minimum(Node<T> *node) {
     if (!node->left)

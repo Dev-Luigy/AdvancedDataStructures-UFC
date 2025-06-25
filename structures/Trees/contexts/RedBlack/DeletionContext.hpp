@@ -1,5 +1,5 @@
-#ifndef DELETION_CONTEXT_HPP
-#define DELETION_CONTEXT_HPP
+#ifndef RB_DELETION_CONTEXT_HPP
+#define RB_DELETION_CONTEXT_HPP
 
 #include "../../../../interfaces/core/Node.hpp"
 #include "../../../../interfaces/enum/RotationDirection.hpp"
