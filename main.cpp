@@ -51,5 +51,21 @@ int main() {
   DataStructure<int>::execute(avlInt, valores);
   DataStructure<int>::execute(rbInt, valores);
 
+  std::cout << "AVL: Removes 30:" << std::endl;
+  avlInt.remove(30);
+  avlInt.show();
+
+  std::cout << "RB: Removes 30:" << std::endl;
+  rbInt.remove(30);
+  rbInt.show();
+
+  std::cout << "RB: Removes variável:" << std::endl;
+  rbWords.remove({"variável", 0});
+  rbWords.show();
+
+  std::cout << "AVL: Removes variável:" << std::endl;
+  avlWords.remove({"variável", 0});
+  avlWords.show();
+
   return 0;
 }
