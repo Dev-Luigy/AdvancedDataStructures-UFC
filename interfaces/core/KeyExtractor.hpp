@@ -1,8 +1,15 @@
 #ifndef KEYEXTRACTOR_HPP
 #define KEYEXTRACTOR_HPP
 
+#include <ostream>
 #include <tuple>
 #include <utility>
+
+inline std::ostream &operator<<(std::ostream &os,
+                                const std::pair<std::string, int> &p) {
+  os << "(" << p.first << ", " << p.second << ")";
+  return os;
+}
 
 template <typename T> struct KeyExtractor {
   static const T &getKey(const T &value) { return value; }

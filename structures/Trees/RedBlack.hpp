@@ -8,30 +8,46 @@
 #include "contexts/RedBlack/RotationContext.hpp"
 #include <iostream>
 #include <queue>
+#include <utility>
 
-template <typename T, typename InsertionCtx = InsertionContext<T>,
-          typename DeletionCtx = DeletionContext<T>,
-          template <typename> class RotationCtx = RotationContext>
+template <typename T, typename InsertionCtx = RBInsertionContext<T>,
+          typename DeletionCtx = RBDeletionContext<T>,
+          template <typename> class RotationCtx = RBRotationContext>
 class RedBlack : public RotatableTree<T, RotationCtx> {
   using Base = RotatableTree<T, RotationCtx>;
   using Base::_rotate_left;
   using Base::_rotate_right;
 
 public:
+  using KeyType = decltype(KeyExtractor<T>::getKey(std::declval<T>()));
+
   RedBlack() {};
   RedBlack(T value) { m_root = new Node<T>(value); };
   RedBlack(Node<T> *root) : m_root(root) {};
   ~RedBlack() { clear(); };
 
   // Data Structure: methods
-  void insert(T value) override {
-    m_root = _insert(m_root, value);
-    if (m_root)
-      while (m_root->parent) { // because of rotations
-        m_root = m_root->parent;
-      }
+  void insert(T value) override { m_root = _insert(m_root, value); }
+
+  void remove(T value) override {
+    m_root = _remove(m_root, KeyExtractor<T>::getKey(value));
   }
-  void remove(T value) override { m_root = _remove(m_root, value); };
+
+  T successor(T value) override {
+    Node<T> *node = _contains(m_root, KeyExtractor<T>::getKey(value));
+    Node<T> *succ = _successor(node);
+    return succ ? succ->key : T{};
+  }
+
+  T predecessor(T value) override {
+    Node<T> *node = _contains(m_root, KeyExtractor<T>::getKey(value));
+    Node<T> *pred = _predecessor(node);
+    return pred ? pred->key : T{};
+  }
+
+  bool contains(T value) const override {
+    return _contains(m_root, KeyExtractor<T>::getKey(value)) != nullptr;
+  }
 
   // - maximum and minimum
   T minimum() override {
@@ -45,30 +61,7 @@ public:
     return _maximum(m_root)->key;
   };
 
-  // - successor and predecessor.
-  T successor(T value) override {
-    if (isEmpty()) {
-      throw std::runtime_error("Tree is empty");
-    }
-
-    Node<T> *node = _contains(m_root, value);
-    Node<T> *succ = _successor(node);
-
-    return succ ? succ->key : value;
-  };
-  T predecessor(T value) override {
-    if (isEmpty()) {
-      throw std::runtime_error("Tree is empty");
-    }
-
-    Node<T> *node = _contains(m_root, value);
-    Node<T> *pred = _predecessor(node);
-
-    return pred ? pred->key : value;
-  };
-
   // - others datastructures methods.
-  bool contains(T k) const override { return _contains(m_root, k) != nullptr; };
   bool isEmpty() override { return !_size(m_root); };
   void clear() override { m_root = _clear(m_root); };
 
@@ -114,11 +107,11 @@ private:
     return m_root;
   }
 
-  Node<T> *_remove(Node<T> *node, T value) {
+  Node<T> *_remove(Node<T> *node, const KeyType &key) {
     if (!node)
       return nullptr;
 
-    Node<T> *nodeToDelete = _contains(m_root, value);
+    Node<T> *nodeToDelete = _contains(m_root, key);
     if (!nodeToDelete)
       return m_root;
 
@@ -322,14 +315,19 @@ private:
     return nullptr;
   }
 
-  Node<T> *_contains(Node<T> *node, const T &k) const {
-    if (node == nullptr || node->key == k)
+  Node<T> *_contains(Node<T> *node, const KeyType &key) const {
+    if (node == nullptr)
+      return nullptr;
+
+    KeyType nodeKey = KeyExtractor<T>::getKey(node->key);
+
+    if (key == nodeKey)
       return node;
 
-    if (k < node->key)
-      return _contains(node->left, k);
+    if (key < nodeKey)
+      return _contains(node->left, key);
     else
-      return _contains(node->right, k);
+      return _contains(node->right, key);
   }
 
   void _BFS(Node<T> *node) {
