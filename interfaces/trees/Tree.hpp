@@ -59,8 +59,12 @@ public:
       return;
     }
 
-    std::string colorCode =
-        (node->color == NodeColor::RED) ? "\033[31m" : "\033[30m";
+    std::string colorCode;
+    if (!node->parent || node->color == node->parent->color)
+      colorCode = "\033[00m";
+    else
+      colorCode = (node->color == NodeColor::RED) ? "\033[31m" : "\033[30m";
+
     std::cout << colorCode << node->key << "\033[0m" << std::endl;
 
     if (node->left != nullptr || node->right != nullptr)
