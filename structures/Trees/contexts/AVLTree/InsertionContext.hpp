@@ -40,7 +40,9 @@ struct AVLInsertionContext : public FixupContext<AVLInsertionCase, T> {
     return node == m_root->left || node == m_root->right;
   }
 
-  bool isLeaf(Node<T> *node) const { return !node->left && !node->right; }
+  bool isLeaf(Node<T> *node) const {
+    return node && !node->left && !node->right;
+  }
 
   bool wasInsertedAtLeft() const { return node->left && key < node->left->key; }
   bool isLeftWeighted() const { return balance < -1; }
