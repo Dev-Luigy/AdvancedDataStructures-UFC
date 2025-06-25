@@ -8,6 +8,8 @@
 #include <vector>
 
 template <typename T> class DataStructure {
+  using KeyType = decltype(KeyExtractor<T>::getKey(std::declval<T>()));
+
 public:
   virtual void insert(T value) = 0;
   virtual void remove(T value) = 0;
