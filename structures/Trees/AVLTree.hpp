@@ -9,13 +9,14 @@
 #include <iostream>
 #include <queue>
 
-template <typename T, typename InsertionCtx = InsertionContext<T>,
-          typename DeletionCtx = DeletionContext<T>,
-          template <typename> class RotationCtx = RotationContext>
+template <typename T, typename InsertionCtx = AVLInsertionContext<T>,
+          typename DeletionCtx = AVLDeletionContext<T>,
+          template <typename> class RotationCtx = AVLRotationContext>
 class AVLTree : public RotatableTree<T, RotationCtx> {
   using Base = RotatableTree<T, RotationCtx>;
   using Base::_rotate_left;
   using Base::_rotate_right;
+  using KeyType = decltype(KeyExtractor<T>::getKey(std::declval<T>()));
 
 public:
   AVLTree() {};
@@ -72,6 +73,10 @@ public:
   void BFS() override { _BFS(m_root); };
   Node<T> *getRoot() const override { return m_root; }
   Node<T> *&getRootRef() override { return m_root; }
+  Node<T> *getNode(const T &value) override {
+    KeyType key = KeyExtractor<T>::getKey(value);
+    return _contains(m_root, key);
+  }
 
 private:
   Node<T> *m_root{nullptr};

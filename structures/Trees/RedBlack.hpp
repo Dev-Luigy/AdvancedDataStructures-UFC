@@ -17,10 +17,9 @@ class RedBlack : public RotatableTree<T, RotationCtx> {
   using Base = RotatableTree<T, RotationCtx>;
   using Base::_rotate_left;
   using Base::_rotate_right;
-
-public:
   using KeyType = decltype(KeyExtractor<T>::getKey(std::declval<T>()));
 
+public:
   RedBlack() {};
   RedBlack(T value) { m_root = new Node<T>(value); };
   RedBlack(Node<T> *root) : m_root(root) {};
@@ -71,6 +70,10 @@ public:
   void BFS() override { _BFS(m_root); };
   Node<T> *getRoot() const override { return m_root; }
   Node<T> *&getRootRef() override { return m_root; }
+  Node<T> *getNode(const T &value) override {
+    KeyType key = KeyExtractor<T>::getKey(value);
+    return _contains(m_root, key);
+  }
 
 private:
   Node<T> *m_root{nullptr};
