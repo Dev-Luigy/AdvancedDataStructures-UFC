@@ -6,7 +6,7 @@
 #include "RotationContext.hpp"
 #include <stdexcept>
 
-enum class InsertionCase {
+enum class RBInsertionCase {
   ROOT, // No fix-up required (node is root or no grandparent)
 
   // In this case, we are returning from recursion and we don't need fixups;
@@ -38,15 +38,15 @@ enum class InsertionCase {
   CASE3B
 };
 
-template <typename T, typename RotationCtx = RotationContext<T>>
-struct InsertionContext : public FixupContext<InsertionCase, T> {
+template <typename T, typename RotationCtx = RBRotationContext<T>>
+struct RBInsertionContext : public FixupContext<RBInsertionCase, T> {
   Node<T> *node{nullptr};
   Node<T> *parent{nullptr};
   Node<T> *grandparent{nullptr};
   Node<T> *uncle{nullptr};
   Node<T> *&m_root;
 
-  InsertionContext(Node<T> *n, Node<T> *&m_root)
+  RBInsertionContext(Node<T> *n, Node<T> *&m_root)
       : node(n), parent(n ? n->parent : nullptr),
         grandparent(parent ? parent->parent : nullptr), uncle(nullptr),
         m_root(m_root) {
@@ -79,22 +79,22 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
   bool hasGrandParent() const { return !!grandparent; }
   bool hasUncle() const { return !!uncle; }
 
-  InsertionCase getCase() const override {
+  RBInsertionCase getCase() const override {
     if (!hasParent() || !hasGrandParent())
-      return InsertionCase::ROOT;
+      return RBInsertionCase::ROOT;
 
     if (isParentBlack() || isNodeColorDifFromParent())
-      return InsertionCase::NOFIXUP;
+      return RBInsertionCase::NOFIXUP;
 
     if (uncle && uncle->color == RED)
-      return InsertionCase::CASE1;
+      return RBInsertionCase::CASE1;
 
     if (isParentLeftChildren()) {
-      return isNodeLeftChildren() ? InsertionCase::CASE3A
-                                  : InsertionCase::CASE2A;
+      return isNodeLeftChildren() ? RBInsertionCase::CASE3A
+                                  : RBInsertionCase::CASE2A;
     } else {
-      return isNodeLeftChildren() ? InsertionCase::CASE2B
-                                  : InsertionCase::CASE3B;
+      return isNodeLeftChildren() ? RBInsertionCase::CASE2B
+                                  : RBInsertionCase::CASE3B;
     }
   }
 
@@ -128,36 +128,36 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
       updateRelatives();
 
       switch (getCase()) {
-      case InsertionCase::ROOT:
+      case RBInsertionCase::ROOT:
         if (node == m_root)
           node->color = BLACK;
         break;
 
-      case InsertionCase::NOFIXUP:
+      case RBInsertionCase::NOFIXUP:
         break;
 
-      case InsertionCase::CASE1:
+      case RBInsertionCase::CASE1:
         parent->color = BLACK;
         uncle->color = BLACK;
         if (grandparent != m_root)
           grandparent->color = RED;
         break;
 
-      case InsertionCase::CASE2A:
+      case RBInsertionCase::CASE2A:
         RotationCtx::rotate(parent, m_root, Direction::LEFT);
         RotationCtx::rotate(grandparent, m_root, Direction::RIGHT);
         break;
 
-      case InsertionCase::CASE2B:
+      case RBInsertionCase::CASE2B:
         RotationCtx::rotate(parent, m_root, Direction::RIGHT);
         RotationCtx::rotate(grandparent, m_root, Direction::LEFT);
         break;
 
-      case InsertionCase::CASE3A:
+      case RBInsertionCase::CASE3A:
         RotationCtx::rotate(grandparent, m_root, Direction::RIGHT);
         break;
 
-      case InsertionCase::CASE3B:
+      case RBInsertionCase::CASE3B:
         RotationCtx::rotate(grandparent, m_root, Direction::LEFT);
         break;
       }

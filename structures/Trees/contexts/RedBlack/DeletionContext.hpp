@@ -6,7 +6,7 @@
 #include "../../../../interfaces/trees/rotatable/FixupContext.hpp"
 #include <stdexcept>
 
-enum class DeletionCase {
+enum class RBDeletionCase {
   // Root is DB, remove DB.
   CASEROOT,
 
@@ -83,7 +83,7 @@ enum class DeletionCase {
 };
 
 template <typename T>
-struct DeletionContext : public FixupContext<DeletionCase, T> {
+struct RBDeletionContext : public FixupContext<RBDeletionCase, T> {
   Node<T> *node{nullptr};
   Node<T> *childrens[2]{nullptr, nullptr};
   Node<T> *parent{nullptr};
@@ -93,7 +93,7 @@ struct DeletionContext : public FixupContext<DeletionCase, T> {
   Node<T> *m_root{nullptr};
   bool DB{false};
 
-  DeletionContext(Node<T> *n, Node<T> *successor, Node<T> *root)
+  RBDeletionContext(Node<T> *n, Node<T> *successor, Node<T> *root)
       : node(n), successor(successor), m_root(root) {
     if (!node) {
       throw std::invalid_argument("Cannot create context from nullptr node");
@@ -173,46 +173,47 @@ struct DeletionContext : public FixupContext<DeletionCase, T> {
     return false;
   }
 
-  DeletionCase getCase() const override {
+  RBDeletionCase getCase() const override {
     if (node == m_root)
-      return DeletionCase::CASEROOT;
+      return RBDeletionCase::CASEROOT;
 
     if (isRed()) {
       if (isLeaf())
-        return DeletionCase::CASE1A;
+        return RBDeletionCase::CASE1A;
       if (successor) {
         if (successorIsRed())
-          return DeletionCase::CASE1BR;
+          return RBDeletionCase::CASE1BR;
         else {
-          return DeletionCase::CASE1BB;
+          return RBDeletionCase::CASE1BB;
         }
       } else {
-        return DeletionCase::CASE1C;
+        return RBDeletionCase::CASE1C;
       }
     } else if (isBlack()) {
       if (isSiblingBlack()) {
         if (isLeftNephewBlack() && isRightNephewBlack())
-          return DeletionCase::CASE3;
+          return RBDeletionCase::CASE3;
 
         if (isNodeLeftChild())
-          return isLeftNephewRed() ? DeletionCase::CASE4LL
-                                   : DeletionCase::CASE5LR;
+          return isLeftNephewRed() ? RBDeletionCase::CASE4LL
+                                   : RBDeletionCase::CASE5LR;
         else
-          return isRightNephewRed() ? DeletionCase::CASE4RR
-                                    : DeletionCase::CASE5RL;
+          return isRightNephewRed() ? RBDeletionCase::CASE4RR
+                                    : RBDeletionCase::CASE5RL;
       } else {
-        return isNodeLeftChild() ? DeletionCase::CASE2L : DeletionCase::CASE2R;
+        return isNodeLeftChild() ? RBDeletionCase::CASE2L
+                                 : RBDeletionCase::CASE2R;
       }
     }
 
-    return DeletionCase::CASE1A;
+    return RBDeletionCase::CASE1A;
   }
 
   Node<T> *useCaseAction() override {
     if (!node)
       return m_root;
 
-    if (getCase() == DeletionCase::CASE1A) {
+    if (getCase() == RBDeletionCase::CASE1A) {
       if (parent) {
         if (parent->left == node)
           parent->left = nullptr;
@@ -232,21 +233,21 @@ struct DeletionContext : public FixupContext<DeletionCase, T> {
       std::function<Node<T> *(Node<T> *)> rotateLeft = nullptr,
       std::function<Node<T> *(Node<T> *)> rotateRight = nullptr) override {
     switch (getCase()) {
-    case DeletionCase::CASEROOT:
+    case RBDeletionCase::CASEROOT:
       DB = false;
       break;
 
-    case DeletionCase::CASE1A:
+    case RBDeletionCase::CASE1A:
       delete node;
       node = parent;
       return m_root;
 
-    case DeletionCase::CASE1BR:
+    case RBDeletionCase::CASE1BR:
       node->key = successor->key;
       delete successor;
       break;
 
-    case DeletionCase::CASE1BB:
+    case RBDeletionCase::CASE1BB:
       node->key = successor->key;
 
       break;

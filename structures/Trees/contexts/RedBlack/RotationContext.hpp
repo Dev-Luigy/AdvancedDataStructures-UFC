@@ -6,7 +6,7 @@
 #include <stdexcept>
 #include <utility>
 
-template <typename T> struct RotationContext {
+template <typename T> struct RBRotationContext {
   static Node<T> *rotate(Node<T> *node, Node<T> *&m_root, Direction dir) {
     if (!node)
       throw std::invalid_argument("Cannot rotate null node");

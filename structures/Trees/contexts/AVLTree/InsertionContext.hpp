@@ -2,12 +2,11 @@
 #define AVL_INSERTION_CONTEXT_HPP
 
 #include "../../../../interfaces/core/Node.hpp"
-#include "../../../../interfaces/enum/RotationDirection.hpp"
 #include "../../../../interfaces/trees/rotatable/FixupContext.hpp"
 #include "RotationContext.hpp"
 #include <stdexcept>
 
-enum class InsertionCase {
+enum class AVLInsertionCase {
   // Root or root children.
   ROOT,
 
@@ -23,14 +22,14 @@ enum class InsertionCase {
   ZIGRIGHTLEFT,
 };
 
-template <typename T, typename RotationCtx = RotationContext<T>>
-struct InsertionContext : public FixupContext<InsertionCase, T> {
+template <typename T, typename RotationCtx = AVLRotationContext<T>>
+struct AVLInsertionContext : public FixupContext<AVLInsertionCase, T> {
   int balance{0};
   T key{0};
   Node<T> *node{nullptr};
   Node<T> *&m_root{nullptr};
 
-  InsertionContext(Node<T> *node, Node<T> *&m_root, T key, int balance)
+  AVLInsertionContext(Node<T> *node, Node<T> *&m_root, T key, int balance)
       : balance(balance), key(key), node(node), m_root(m_root) {
     if (!node) {
       throw std::invalid_argument("Cannot create context from nullptr node");
@@ -51,21 +50,21 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
   }
   bool isRightWeighted() const { return balance > 1; }
 
-  InsertionCase getCase() const override {
+  AVLInsertionCase getCase() const override {
     if (!m_root ||
         (isRootChildren() &&
          ((isLeaf(m_root->left) && node == m_root->left) ||
           (isLeaf(m_root->right) && node == m_root->right))) ||
         (node == m_root && isLeaf(m_root)))
-      return InsertionCase::ROOT;
+      return AVLInsertionCase::ROOT;
     if (!isLeftWeighted() && !isRightWeighted())
-      return InsertionCase::NOFIXUP;
+      return AVLInsertionCase::NOFIXUP;
     if (isLeftWeighted())
-      return wasInsertedAtLeft() ? InsertionCase::LINEARLEFT
-                                 : InsertionCase::ZIGLEFTRIGHT;
+      return wasInsertedAtLeft() ? AVLInsertionCase::LINEARLEFT
+                                 : AVLInsertionCase::ZIGLEFTRIGHT;
     else {
-      return wasInsertedAtRight() ? InsertionCase::LINEARRIGHT
-                                  : InsertionCase::ZIGRIGHTLEFT;
+      return wasInsertedAtRight() ? AVLInsertionCase::LINEARRIGHT
+                                  : AVLInsertionCase::ZIGRIGHTLEFT;
     }
   }
 
@@ -108,23 +107,23 @@ struct InsertionContext : public FixupContext<InsertionCase, T> {
   Node<T> *fixupAction() override {
 
     switch (getCase()) {
-    case InsertionCase::ROOT:
-    case InsertionCase::NOFIXUP:
+    case AVLInsertionCase::ROOT:
+    case AVLInsertionCase::NOFIXUP:
       return node;
 
-    case InsertionCase::LINEARLEFT:
-      return RotationContext<T>::rotate(node, m_root, Direction::RIGHT);
+    case AVLInsertionCase::LINEARLEFT:
+      return AVLRotationContext<T>::rotate(node, m_root, Direction::RIGHT);
 
-    case InsertionCase::LINEARRIGHT:
-      return RotationContext<T>::rotate(node, m_root, Direction::LEFT);
+    case AVLInsertionCase::LINEARRIGHT:
+      return AVLRotationContext<T>::rotate(node, m_root, Direction::LEFT);
 
-    case InsertionCase::ZIGRIGHTLEFT:
-      RotationContext<T>::rotate(node->right, m_root, Direction::RIGHT);
-      return RotationContext<T>::rotate(node, m_root, Direction::LEFT);
+    case AVLInsertionCase::ZIGRIGHTLEFT:
+      AVLRotationContext<T>::rotate(node->right, m_root, Direction::RIGHT);
+      return AVLRotationContext<T>::rotate(node, m_root, Direction::LEFT);
 
-    case InsertionCase::ZIGLEFTRIGHT:
-      RotationContext<T>::rotate(node->left, m_root, Direction::LEFT);
-      return RotationContext<T>::rotate(node, m_root, Direction::RIGHT);
+    case AVLInsertionCase::ZIGLEFTRIGHT:
+      AVLRotationContext<T>::rotate(node->left, m_root, Direction::LEFT);
+      return AVLRotationContext<T>::rotate(node, m_root, Direction::RIGHT);
     }
 
     return node;
