@@ -5,6 +5,8 @@
 #include "Node.hpp"
 #include <vector>
 template <typename T> class DataStructure {
+
+  // https://learn.microsoft.com/pt-br/cpp/cpp/decltype-cpp?view=msvc-170
   using KeyType = decltype(KeyExtractor<T>::getKey(
       std::declval<T>())); // this will return type of getKey, if key is int,
                            // then keytype = int
