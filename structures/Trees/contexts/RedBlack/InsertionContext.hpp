@@ -17,25 +17,25 @@ enum class RBInsertionCase {
   // Recolor parent and uncle to BLACK, grandparent to RED.
   // This maintains black height but may introduce red-red violation higher
   // up.
-  CASE1,
+  REDUNCLE,
 
   // Node is the right child of a left parent, uncle is BLACK.
   // Requires left rotation on parent, followed by right rotation on
   // grandparent.
-  CASE2A,
+  ZIGLEFTRIGHT,
 
   // Node is the left child of a right parent, uncle is BLACK.
   // Requires right rotation on parent, followed by left rotation on
   // grandparent.
-  CASE2B,
+  ZIGRIGHTLEFT,
 
   // Node is the left child of a left parent, uncle is BLACK.
   // Requires right rotation on grandparent.
-  CASE3A,
+  LINEARLEFT,
 
   // Node is the right child of a right parent, uncle is BLACK.
   // Requires left rotation on grandparent.
-  CASE3B
+  LINEARRIGHT
 };
 
 template <typename T, typename RotationCtx = RBRotationContext<T>>
@@ -87,14 +87,14 @@ struct RBInsertionContext : public FixupContext<RBInsertionCase, T> {
       return RBInsertionCase::NOFIXUP;
 
     if (uncle && uncle->color == RED)
-      return RBInsertionCase::CASE1;
+      return RBInsertionCase::REDUNCLE;
 
     if (isParentLeftChildren()) {
-      return isNodeLeftChildren() ? RBInsertionCase::CASE3A
-                                  : RBInsertionCase::CASE2A;
+      return isNodeLeftChildren() ? RBInsertionCase::LINEARLEFT
+                                  : RBInsertionCase::ZIGLEFTRIGHT;
     } else {
-      return isNodeLeftChildren() ? RBInsertionCase::CASE2B
-                                  : RBInsertionCase::CASE3B;
+      return isNodeLeftChildren() ? RBInsertionCase::ZIGRIGHTLEFT
+                                  : RBInsertionCase::LINEARRIGHT;
     }
   }
 
@@ -136,28 +136,28 @@ struct RBInsertionContext : public FixupContext<RBInsertionCase, T> {
       case RBInsertionCase::NOFIXUP:
         break;
 
-      case RBInsertionCase::CASE1:
+      case RBInsertionCase::REDUNCLE:
         parent->color = BLACK;
         uncle->color = BLACK;
         if (grandparent != m_root)
           grandparent->color = RED;
         break;
 
-      case RBInsertionCase::CASE2A:
+      case RBInsertionCase::ZIGLEFTRIGHT:
         RotationCtx::rotate(parent, m_root, Direction::LEFT);
         RotationCtx::rotate(grandparent, m_root, Direction::RIGHT);
         break;
 
-      case RBInsertionCase::CASE2B:
+      case RBInsertionCase::ZIGRIGHTLEFT:
         RotationCtx::rotate(parent, m_root, Direction::RIGHT);
         RotationCtx::rotate(grandparent, m_root, Direction::LEFT);
         break;
 
-      case RBInsertionCase::CASE3A:
+      case RBInsertionCase::LINEARLEFT:
         RotationCtx::rotate(grandparent, m_root, Direction::RIGHT);
         break;
 
-      case RBInsertionCase::CASE3B:
+      case RBInsertionCase::LINEARRIGHT:
         RotationCtx::rotate(grandparent, m_root, Direction::LEFT);
         break;
       }

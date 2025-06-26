@@ -19,7 +19,6 @@ template <typename T> struct RBRotationContext {
 
     Node<T> *childrenOrphan = (dir == LEFT) ? children->left : children->right;
 
-    // Rotação
     if (dir == LEFT) {
       node->right = childrenOrphan;
       if (childrenOrphan)
