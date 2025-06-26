@@ -60,9 +60,13 @@ public:
     }
 
     std::string colorCode;
-    if (!node->parent || node->color == node->parent->color)
-      colorCode = "\033[00m";
-    else
+    if (!node->parent ||
+        (node->color == node->parent->color && node->color == RED)) {
+      if (!node->parent && !(node->height != 1)) // for RB root.
+        colorCode = "\033[30m";
+      else
+        colorCode = "\033[00m";
+    } else
       colorCode = (node->color == NodeColor::RED) ? "\033[31m" : "\033[30m";
 
     std::cout << colorCode << node->key << "\033[0m" << std::endl;
