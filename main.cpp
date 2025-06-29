@@ -1,3 +1,5 @@
+#include "structures/Data/ExternHashMap.hpp"
+#include "structures/Data/OpenHashMap.hpp"
 #include "structures/Trees/AVLTree.hpp"
 #include "structures/Trees/RedBlack.hpp"
 #include <string>
@@ -7,6 +9,8 @@ int main() {
   RedBlack<std::pair<std::string, int>> rbWords;
   AVLTree<int> avlInt;
   RedBlack<int> rbInt;
+  OpenHashMap<std::pair<std::string, int>> openHash;
+  ExternHashMap<std::pair<std::string, int>> externHash;
 
   std::vector<int> valores = {30, 20, 40, 10, 25, 35, 50, 5, 15};
   std::vector<std::string> words = {
@@ -51,21 +55,50 @@ int main() {
   DataStructure<int>::execute(avlInt, valores);
   DataStructure<int>::execute(rbInt, valores);
 
-  std::cout << "AVL: Removes 30:" << std::endl;
+  // Insere as palavras nas HashMaps com contagem inicial zero (ou 1 se
+  // preferir)
+  for (const auto &word : words) {
+    std::pair<std::string, int> wordPair = {word, 1}; // Começando contagem em 1
+    openHash.insert(wordPair);
+    externHash.insert(wordPair);
+  }
+
+  for (int v : valores) {
+    avlInt.insert(v);
+    rbInt.insert(v);
+  }
+
+  std::cout << "AVL: Remove 30:" << std::endl;
   avlInt.remove(30);
   avlInt.show();
 
-  std::cout << "RB: Removes 30:" << std::endl;
+  std::cout << "RB: Remove 30:" << std::endl;
   rbInt.remove(30);
   rbInt.show();
 
-  std::cout << "RB: Removes variável:" << std::endl;
+  std::cout << "RB: Remove 'variável':" << std::endl;
   rbWords.remove({"variável", 0});
   rbWords.show();
 
-  std::cout << "AVL: Removes variável:" << std::endl;
+  std::cout << "AVL: Remove 'variável':" << std::endl;
   avlWords.remove({"variável", 0});
   avlWords.show();
+
+  std::cout << "OpenHashMap: contém 'função'? "
+            << (openHash.contains({"função", 0}) ? "sim" : "não") << '\n';
+  openHash.show();
+  openHash.remove({"função", 0});
+  std::cout << "OpenHashMap: removeu 'função'. Contém agora? "
+            << (openHash.contains({"função", 0}) ? "sim" : "não") << '\n';
+  openHash.show();
+
+  std::cout << "ExternHashMap: contém 'livro'? "
+            << (externHash.contains({"livro", 0}) ? "sim" : "não") << '\n';
+  externHash.show();
+  externHash.remove({"livro", 0});
+  std::cout << "ExternHashMap: removeu 'livro'. Contém agora? "
+            << (externHash.contains({"livro", 0}) ? "sim" : "não") << '\n';
+  externHash.show();
 
   return 0;
 }
