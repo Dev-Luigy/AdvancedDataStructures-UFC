@@ -1,0 +1,2 @@
+Operation,Execution_Time_ms,Rotations,Key_Comparisons,Insertion_Fixups,Deletion_Fixups,Search_Depth,Nodes_Visited,Color_Changes
+freq_inserts_and_updates,0.592,0,1552,0,0,0,1552,0

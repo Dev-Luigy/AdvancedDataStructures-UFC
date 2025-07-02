@@ -1,179 +1,147 @@
-# 📊 Estruturas de Dados Avançadas – Contador de Frequência e Benchmark
+# Advanced Data Structures - Benchmark & Word Frequency
 
-Este projeto implementa e compara diferentes estruturas de dados em C++ para realizar:
+Este projeto implementa e analisa o desempenho de diferentes estruturas de dados em C++:
 
-- Contagem de frequência de palavras com suporte a Unicode (ICU)
-- Benchmarks de tempo de inserção/remoção/consulta
-- Visualização de resultados com Python
+- Árvores AVL
+- Árvores Rubro-Negras
+- Tabelas de Espalhamento com Endereçamento Aberto (Open HashMap)
+- Tabelas de Espalhamento com Acesso Externo (Extern HashMap)
 
----
+O projeto realiza:
 
-## 🧩 Estruturas suportadas
-
-- `AVLTree`
-- `RedBlack`
-- `OpenHashMap`
-- `ExternHashMap`
-
-Todas seguem uma interface comum e são integradas por uma factory.
+- Testes de benchmark automatizados (inserção, busca, remoção)
+- Contagem de frequência de palavras de arquivos texto
+- Análise e visualização dos dados via Python (matplotlib, pandas)
 
 ---
 
-## ⚙️ Compilação
+## Estrutura do Projeto
 
-Use o Makefile para compilar os dois alvos:
+```text
+├── main.cpp                    # Contagem de frequência de palavras
+├── benchmark.cpp               # Executa benchmarks automatizados
+├── factory/
+│   ├── makeStructury.cpp       # Fábrica de estruturas de dados
+│   └── makeStructury.hpp
+├── interfaces/                # Interfaces genéricas para árvores/estruturas
+├── structures/                # Implementações das estruturas
+│   ├── Trees/
+│   └── Data/
+├── tests/                     # Testes unitários (opcional)
+├── texto.txt                  # Arquivo de entrada exemplo
+├── performance_results.csv    # Resultados dos benchmarks
+├── freq_run_results.csv       # Resultado da execução via main
+├── analyze_results_all_structures.py
+├── analyze_results_dictionary.py
+├── performance_plot.png       # Gráfico de benchmarks
+├── README.md
+```
+
+---
+
+## Requisitos
+
+- **C++17**
+- **ICU** (International Components for Unicode)
+- **Python 3.10+**
+- **Bibliotecas Python:** matplotlib, pandas
+
+Instale com:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install matplotlib pandas
+```
+
+Para compilar:
 
 ```bash
 make
 ```
 
-Isso irá gerar dois binários:
+---
 
-- `main` — executa o programa de contagem de palavras
-- `benchmark` — executa testes de desempenho e gera o arquivo `performance_results.csv`
+## Execução da Frequência de Palavras
+
+```bash
+./maine freq <estrutura> <arquivo_texto>
+```
+
+**Exemplos:**
+
+```bash
+./maine freq avl texto.txt
+./maine freq rb texto.txt
+./maine freq open texto.txt
+./maine freq extern texto.txt
+```
+
+Ao final, o resultado da estrutura é impresso e os dados de performance salvos em:
+
+```text
+freq_run_results.csv
+```
+
+### Exemplo de Saída
+
+```bash
+$ ./maine freq avl texto.txt
+        ┌───(vida, 2)
+    ┌───(terra, 3)
+    │   └───(toda, 1)
+...
+Benchmark da execução freq salvo em freq_run_results.csv
+```
 
 ---
 
-## ▶️ Execução
-
-### 🔠 Rodar o contador de frequência (`main`)
+## Execução dos Benchmarks (automáticos)
 
 ```bash
-./main <estrutura> <arquivo_texto>
+./benchmark texto.txt
 ```
 
-#### 📌 Exemplos:
+Isso testará as estruturas com tamanhos de dados variados e salvará os resultados em:
 
-```bash
-./main avl texto.txt
-./main rb texto.txt
-./main open texto.txt
-./main extern texto.txt
-```
-
-O programa irá:
-
-- Ler o arquivo `texto.txt`
-- Normalizar as palavras com ICU (acentuação, maiúsculas etc.)
-- Contar frequência usando a estrutura especificada
-- Mostrar todas as palavras com suas contagens ordenadas pela lógica da estrutura
-
----
-
-### ⏱️ Rodar o benchmark
-
-```bash
-make run-benchmark
-```
-
-Isso irá gerar um arquivo:
-
-```
+```text
 performance_results.csv
 ```
 
-Contendo os tempos de execução para inserções, remoções e consultas.
-
 ---
 
-## 📊 Visualização com Python
+## Visualização dos Resultados (Python)
 
-### 1. Criar ambiente virtual:
-
-```bash
-python3 -m venv .venv
-```
-
-### 2. Ativar ambiente:
-
-#### Linux/macOS Bash:
+### Para visualizar os benchmarks gerais:
 
 ```bash
 source .venv/bin/activate
+python analyze_results_all_structures.py
 ```
 
-#### Fish shell:
+### Para visualizar o resultado da execução `freq`:
 
 ```bash
-source .venv/bin/activate.fish
+source .venv/bin/activate
+python analyze_results_dictionary.py
 ```
 
-### 3. Instalar dependências:
-
-```bash
-pip install -r requirements.txt
-```
-
-> O `requirements.txt` deve conter:
->
-> ```
-> pandas
-> matplotlib
-> ```
-
-### 4. Rodar análise de resultados:
-
-```bash
-.venv/bin/python analyze_results.py
-```
-
-Ou com ambiente ativado:
-
-```bash
-python analyze_results.py
-```
+Isso irá gerar gráficos (salvos como `performance_plot.png` ou exibidos na tela).
 
 ---
 
-## 🧹 Limpeza
+## Exemplos de Gráficos
 
-Para remover os binários e o CSV de resultados:
+### Benchmark Geral
 
-```bash
-make clean
-```
+![Gráfico Geral](performance_plot.png)
 
----
+### Execução de Frequência de Palavras
 
-## 📁 Estrutura do Projeto
-
-```
-.
-├── main.cpp
-├── benchmark.cpp
-├── analyze_results.py
-├── factory/
-│   └── makeStructury.{hpp,cpp}
-├── structures/
-│   ├── Trees/
-│   └── Data/
-├── interfaces/
-├── texto.txt  (exemplo de entrada)
-├── performance_results.csv
-├── .venv/
-├── Makefile
-└── README.md
-```
+![Gráfico Freq](performance_analysis.png)
 
 ---
 
-## 🛠️ Requisitos
+## Créditos
 
-### C++
-
-- `g++` com suporte a C++17
-- `pkg-config`
-- `libicu-dev` (ICU para Unicode)
-
-Instalar no Ubuntu:
-
-```bash
-sudo apt install g++ pkg-config libicu-dev
-```
-
-### Python
-
-- Python 3.7+
-- `venv`, `pip`, `pandas`, `matplotlib`
-
----
+Desenvolvido por Luigy Gabriel, Universidade Federal do Ceará (UFC)

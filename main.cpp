@@ -1,145 +1,87 @@
-#include <iostream>
-#include <string>
-
-#include <unicode/normalizer2.h>
-#include <unicode/unistr.h>
-#include <unicode/ustream.h>
-
 #include <algorithm>
-#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <unordered_map>
 
+#include <unicode/normalizer2.h>
+#include <unicode/uchar.h>
+#include <unicode/unistr.h>
+
+#include "PerformanceTracker.hpp"
 #include "factory/makeStructury.hpp"
 
-std::string normalizeAndLower(const std::string &input) {
+std::string normalizeAndRemoveAccents(const std::string &word) {
   UErrorCode status = U_ZERO_ERROR;
-  const icu::Normalizer2 *normalizer = icu::Normalizer2::getNFCInstance(status);
+  const icu::Normalizer2 *normalizer = icu::Normalizer2::getNFDInstance(status);
   if (U_FAILURE(status))
-    return input;
-  icu::UnicodeString ustr = icu::UnicodeString::fromUTF8(input);
+    return word;
+
+  icu::UnicodeString ustr = icu::UnicodeString::fromUTF8(word);
   icu::UnicodeString normalized = normalizer->normalize(ustr, status);
   if (U_FAILURE(status))
-    return input;
-  normalized.toLower();
-  std::string result;
-  normalized.toUTF8String(result);
-  return result;
+    return word;
+
+  icu::UnicodeString result;
+  for (int32_t i = 0; i < normalized.length();) {
+    UChar32 c = normalized.char32At(i);
+    int32_t charLength = U16_LENGTH(c);
+
+    if (u_charType(c) != U_NON_SPACING_MARK) {
+      result.append(c);
+    }
+    i += charLength;
+  }
+
+  result.toLower();
+
+  std::string out;
+  result.toUTF8String(out);
+  return out;
 }
 
-template <typename DataStructure>
-void loadFrequencies(DataStructure &ds,
-                     const std::unordered_map<std::string, int> &freqs) {
-  for (const auto &[word, count] : freqs) {
-    ds.insert({word, count});
+std::string removeAccents(const std::string &word) {
+  UErrorCode status = U_ZERO_ERROR;
+  const icu::Normalizer2 *normalizer = icu::Normalizer2::getNFDInstance(status);
+  if (U_FAILURE(status))
+    return word;
+
+  icu::UnicodeString ustr = icu::UnicodeString::fromUTF8(word);
+  icu::UnicodeString normalized = normalizer->normalize(ustr, status);
+  if (U_FAILURE(status))
+    return word;
+
+  icu::UnicodeString result;
+  for (int32_t i = 0; i < normalized.length();) {
+    UChar32 c = normalized.char32At(i);
+    int32_t charLength = U16_LENGTH(c);
+    if (u_charType(c) != U_NON_SPACING_MARK) {
+      result.append(c);
+    }
+    i += charLength;
   }
+
+  std::string out;
+  result.toUTF8String(out);
+  return out;
 }
 
 int main(int argc, char *argv[]) {
-  // AVLTree<std::pair<std::string, int>> avlWords;
-  // RedBlack<std::pair<std::string, int>> rbWords;
-  // AVLTree<int> avlInt;
-  // RedBlack<int> rbInt;
-  // OpenHashMap<std::pair<std::string, int>> openHash;
-  // ExternHashMap<std::pair<std::string, int>> externHash;
-  //
-  // std::vector<int> valores = {30, 20, 40, 10, 25, 35, 50, 5, 15};
-  // std::vector<std::string> words = {
-  //     "livro",    "texto",    "palavra",  "árvore",   "código",   "programa",
-  //     "dados",    "função",   "variável", "classe",   "livro",    "texto",
-  //     "programa", "dados",    "livro",    "função",   "código",   "variável",
-  //     "classe",   "palavra",  "texto",    "árvore",   "dados",    "programa",
-  //     "função",   "livro",    "variável", "código",   "classe",   "palavra",
-  //     "programa", "dados",    "texto",    "livro",    "função",   "variável",
-  //     "classe",   "palavra",  "código",   "árvore",   "dados",    "livro",
-  //     "texto",    "programa", "função",   "variável", "classe",   "palavra",
-  //     "código",   "livro",    "árvore",   "texto",    "dados",    "função",
-  //     "programa", "classe",   "variável", "palavra",  "código",   "livro",
-  //     "texto",    "função",   "programa", "dados",    "variável", "classe",
-  //     "palavra",  "árvore",   "código",   "livro",    "texto",    "programa",
-  //     "função",   "dados",    "classe",   "variável", "palavra",  "código",
-  //     "livro",    "árvore",   "texto",    "dados",    "função",   "programa",
-  //     "classe",   "variável", "palavra",  "código",   "livro",    "texto",
-  //     "função",   "programa", "dados",    "variável", "classe",   "palavra",
-  //     "árvore",   "código",   "livro",    "texto",    "programa", "função",
-  //     "dados",    "classe",   "variável", "palavra",  "código",   "livro",
-  //     "árvore",   "texto",    "dados",    "função",   "programa", "classe",
-  //     "variável", "palavra",  "código",   "livro",    "texto",    "função",
-  //     "programa", "dados",    "variável", "classe",   "palavra",  "árvore",
-  //     "código",   "livro",    "texto",    "programa", "função",   "dados",
-  //     "classe",   "variável", "palavra",  "código",   "livro",    "árvore",
-  //     "texto",    "dados",    "função",   "programa", "classe",   "variável",
-  //     "palavra",  "código",   "livro",    "texto",    "função",   "programa",
-  //     "dados",    "variável", "classe",   "palavra",  "árvore",   "código",
-  //     "livro",    "texto",    "programa", "função",   "dados",    "classe",
-  //     "variável", "palavra",  "código",   "livro",    "árvore",   "texto",
-  //     "dados",    "função",   "programa", "classe",   "variável", "palavra",
-  //     "código",   "livro",    "texto",    "função",   "programa", "dados",
-  //     "variável", "classe",   "palavra",  "árvore",   "código",   "livro",
-  //     "texto",    "programa", "função",   "dados",    "classe",   "variável",
-  //     "palavra",  "código",   "livro",    "árvore",   "texto",    "dados",
-  //     "função",   "programa"};
-  //
-  // DataStructure<std::pair<std::string, int>>::execute(avlWords, words);
-  // DataStructure<std::pair<std::string, int>>::execute(rbWords, words);
-  //
-  // DataStructure<int>::execute(avlInt, valores);
-  // DataStructure<int>::execute(rbInt, valores);
-  //
-  // for (const auto &word : words) {
-  //   std::pair<std::string, int> wordPair = {word, 1};
-  //   openHash.insert(wordPair);
-  //   externHash.insert(wordPair);
-  // }
-  //
-  // for (int v : valores) {
-  //   avlInt.insert(v);
-  //   rbInt.insert(v);
-  // }
-  //
-  // std::cout << "AVL: Remove 30:" << std::endl;
-  // avlInt.remove(30);
-  // avlInt.show();
-  //
-  // std::cout << "RB: Remove 30:" << std::endl;
-  // rbInt.remove(30);
-  // rbInt.show();
-  //
-  // std::cout << "RB: Remove 'variável':" << std::endl;
-  // rbWords.remove({"variável", 0});
-  // rbWords.show();
-  //
-  // std::cout << "AVL: Remove 'variável':" << std::endl;
-  // avlWords.remove({"variável", 0});
-  // avlWords.show();
-  //
-  // std::cout << "OpenHashMap: contém 'função'? "
-  //           << (openHash.contains({"função", 0}) ? "sim" : "não") << '\n';
-  // openHash.show();
-  // openHash.remove({"função", 0});
-  // std::cout << "OpenHashMap: removeu 'função'. Contém agora? "
-  //           << (openHash.contains({"função", 0}) ? "sim" : "não") << '\n';
-  // openHash.show();
-  //
-  // std::cout << "ExternHashMap: contém 'livro'? "
-  //           << (externHash.contains({"livro", 0}) ? "sim" : "não") << '\n';
-  // externHash.show();
-  // externHash.remove({"livro", 0});
-  // std::cout << "ExternHashMap: removeu 'livro'. Contém agora? "
-  //           << (externHash.contains({"livro", 0}) ? "sim" : "não") << '\n';
-  // externHash.show();
-  //
-
-  if (argc != 3) {
-    std::cerr << "Uso: freq <avl|rb|open|extern> <arquivo_texto>\n";
+  if (argc != 4) {
+    std::cerr << "Uso: " << argv[0]
+              << " freq <avl|rb|open|extern> <arquivo_texto>\n";
     return 1;
   }
 
-  std::string structType = argv[1];
-  std::string filename = argv[2];
+  std::string command = argv[1];
+  if (command != "freq") {
+    std::cerr << "Comando inválido. Use:\n"
+              << argv[0] << " freq <avl|rb|open|extern> <arquivo_texto>\n";
+    return 1;
+  }
+
+  std::string structType = argv[2];
+  std::string filename = argv[3];
 
   std::ifstream file(filename);
   if (!file) {
@@ -153,30 +95,51 @@ int main(int argc, char *argv[]) {
     return 1;
   }
 
+  PERF_TRACKER.startOperation("freq_inserts_and_updates");
+
   std::string line;
   while (std::getline(file, line)) {
     std::istringstream iss(line);
     std::string word;
     while (iss >> word) {
-      std::string normalized = normalizeAndLower(word);
-      normalized.erase(
-          std::remove_if(normalized.begin(), normalized.end(),
-                         [](unsigned char c) { return !std::isalnum(c); }),
-          normalized.end());
-      if (normalized.empty())
-        continue;
+      std::string cleaned = normalizeAndRemoveAccents(word);
+      cleaned.erase(std::remove_if(cleaned.begin(), cleaned.end(),
+                                   [](unsigned char c) {
+                                     return !(std::isalnum(c) || c == '-');
+                                   }),
+                    cleaned.end());
 
-      std::pair<std::string, int> probe = {normalized, 0};
-      if (ds->contains(probe)) {
-        auto *node = ds->getNode(probe);
-        if (node)
-          node->key.second += 1;
-      } else {
-        ds->insert({normalized, 1});
+      if (!cleaned.empty()) {
+        std::pair<std::string, int> probe{cleaned, 0};
+        if (ds->contains(probe)) {
+          auto *node = ds->getNode(probe);
+          if (node)
+            node->key.second++;
+        } else {
+          ds->insert({cleaned, 1});
+        }
       }
     }
   }
 
+  PERF_TRACKER.endOperation();
+
   ds->show();
+
+  auto stats = PERF_TRACKER.getStats();
+
+  std::ofstream csv_file("freq_run_results.csv");
+  csv_file
+      << "Operation,Execution_Time_ms,Rotations,Key_Comparisons,Insertion_"
+         "Fixups,Deletion_Fixups,Search_Depth,Nodes_Visited,Color_Changes\n";
+  csv_file << "freq_inserts_and_updates," << stats.execution_time_ms << ","
+           << stats.rotations << "," << stats.key_comparisons << ","
+           << stats.insertion_fixups << "," << stats.deletion_fixups << ","
+           << stats.search_depth << "," << stats.nodes_visited << ","
+           << stats.color_changes << "\n";
+  csv_file.close();
+
+  std::cout << "\nBenchmark da execução freq salvo em freq_run_results.csv\n";
+
   return 0;
 }
