@@ -246,7 +246,7 @@ def performance_recommendations(df):
 def create_visualizations(df):
     """Create performance visualizations with all metrics."""
     try:
-        fig, axes = plt.subplots(3, 2, figsize=(15, 18))
+        fig, axes = plt.subplots(4, 2, figsize=(15, 22))  # aumentei para 4 linhas
 
         # 1. Execution Time by Structure and Operation
         execution_pivot = df.pivot_table(
@@ -342,6 +342,17 @@ def create_visualizations(df):
         axes[2, 1].set_title("Insert Performance Scalability")
         axes[2, 1].set_ylabel("Time (ms)")
         axes[2, 1].set_xlabel("Data Size")
+
+        total_insert_time = (
+            insert_data.groupby("Structure")["Execution_Time_ms"].sum().sort_values()
+        )
+        total_insert_time.plot(kind="barh", ax=axes[3, 0], color="skyblue")
+        axes[3, 0].set_title("Time to insert all data:")
+        axes[3, 0].set_xlabel("Total time(ms)")
+        axes[3, 0].set_ylabel("Data Structure")
+
+        # Deixe o último subplot vazio ou remova se quiser
+        axes[3, 1].axis("off")
 
         plt.tight_layout()
         plt.savefig("performance_analysis.png", dpi=300, bbox_inches="tight")
