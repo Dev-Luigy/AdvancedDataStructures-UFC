@@ -4,6 +4,7 @@
 #include "../../../../interfaces/core/Node.hpp"
 #include "../../../../interfaces/enum/RotationDirection.hpp"
 #include "../../../../interfaces/trees/rotatable/FixupContext.hpp"
+#include "../../../../PerformanceTracker.hpp"
 #include <iostream>
 #include <stdexcept>
 
@@ -234,7 +235,14 @@ struct AVLDeletionContext : public FixupContext<AVLDeletionCase, T> {
   Node<T> *fixupAction(
       std::function<Node<T> *(Node<T> *)> rotateLeft = nullptr,
       std::function<Node<T> *(Node<T> *)> rotateRight = nullptr) override {
-    switch (getCase()) {
+    AVLDeletionCase case_type = getCase();
+    
+    // Track deletion fixups
+    if (case_type != AVLDeletionCase::CASEROOT && case_type != AVLDeletionCase::CASE1A) {
+      PERF_TRACKER.incrementDeletionFixups();
+    }
+    
+    switch (case_type) {
     case AVLDeletionCase::CASEROOT:
       DB = false;
       break;
@@ -254,6 +262,7 @@ struct AVLDeletionContext : public FixupContext<AVLDeletionCase, T> {
 
       break;
     }
+    return m_root;
   }
 };
 

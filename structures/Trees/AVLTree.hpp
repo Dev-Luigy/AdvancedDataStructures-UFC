@@ -3,6 +3,7 @@
 
 #include "../../interfaces/core/Node.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
+#include "../../PerformanceTracker.hpp"
 #include "contexts/AVLTree/DeletionContext.hpp"
 #include "contexts/AVLTree/InsertionContext.hpp"
 #include "contexts/AVLTree/RotationContext.hpp"
@@ -87,6 +88,7 @@ public:
 
 private:
   Node<T> *m_root{nullptr};
+  unsigned int rotations{0};
 
   int _height(Node<T> *node) { return node ? node->height : 0; }
 
@@ -106,6 +108,7 @@ private:
     int bal = _balance(node);
 
     if (bal > 1) {
+      rotations++;
       if (_balance(node->right) >= 0) {
         return _rotate_left(node);
       } else {
@@ -115,6 +118,7 @@ private:
     }
 
     else if (bal < -1) {
+      rotations++;
       if (_balance(node->left) <= 0) {
         return _rotate_right(node);
       } else {
@@ -147,7 +151,11 @@ private:
     if (node == nullptr)
       return nullptr;
 
+    PERF_TRACKER.incrementNodesVisited();
+    PERF_TRACKER.incrementSearchDepth();
+    
     KeyType nodeKey = KeyExtractor<T>::getKey(node->key);
+    PERF_TRACKER.incrementComparisons();
 
     if (key == nodeKey)
       return node;

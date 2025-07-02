@@ -4,6 +4,7 @@
 #include "../../../../interfaces/core/Node.hpp"
 #include "../../../../interfaces/trees/rotatable/FixupContext.hpp"
 #include "RotationContext.hpp"
+#include "../../../../PerformanceTracker.hpp"
 #include <stdexcept>
 
 enum class AVLInsertionCase {
@@ -107,8 +108,14 @@ struct AVLInsertionContext : public FixupContext<AVLInsertionCase, T> {
   }
 
   Node<T> *fixupAction() override {
+    AVLInsertionCase case_type = getCase();
+    
+    // Track fixup operations
+    if (case_type != AVLInsertionCase::ROOT && case_type != AVLInsertionCase::NOFIXUP) {
+      PERF_TRACKER.incrementInsertionFixups();
+    }
 
-    switch (getCase()) {
+    switch (case_type) {
     case AVLInsertionCase::ROOT:
     case AVLInsertionCase::NOFIXUP:
       return node;

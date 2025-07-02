@@ -55,10 +55,8 @@ int main() {
   DataStructure<int>::execute(avlInt, valores);
   DataStructure<int>::execute(rbInt, valores);
 
-  // Insere as palavras nas HashMaps com contagem inicial zero (ou 1 se
-  // preferir)
   for (const auto &word : words) {
-    std::pair<std::string, int> wordPair = {word, 1}; // Começando contagem em 1
+    std::pair<std::string, int> wordPair = {word, 1};
     openHash.insert(wordPair);
     externHash.insert(wordPair);
   }

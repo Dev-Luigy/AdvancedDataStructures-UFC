@@ -3,6 +3,7 @@
 
 #include "../../../../interfaces/core/Node.hpp"
 #include "../../../../interfaces/enum/RotationDirection.hpp"
+#include "../../../../PerformanceTracker.hpp"
 #include <stdexcept>
 #include <utility>
 
@@ -10,6 +11,8 @@ template <typename T> struct RBRotationContext {
   static Node<T> *rotate(Node<T> *node, Node<T> *&m_root, Direction dir) {
     if (!node)
       throw std::invalid_argument("Cannot rotate null node");
+
+    PERF_TRACKER.incrementRotations();
 
     Node<T> *parent = node->parent;
     Node<T> *children = (dir == LEFT) ? node->right : node->left;

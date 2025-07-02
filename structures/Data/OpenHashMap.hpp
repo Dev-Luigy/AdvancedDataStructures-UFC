@@ -4,6 +4,7 @@
 #include "../../interfaces/core/DataStructure.hpp"
 #include "../../interfaces/core/KeyExtractor.hpp"
 #include "../../interfaces/core/Node.hpp"
+#include "../../PerformanceTracker.hpp"
 
 #include <functional>
 #include <iostream>
@@ -75,6 +76,7 @@ private:
     size_t start = index;
 
     do {
+      PERF_TRACKER.incrementComparisons();
       if (m_table[index].has_value() &&
           KeyExtractor<T>::getKey(m_table[index].value()) == key) {
         return static_cast<int>(index);

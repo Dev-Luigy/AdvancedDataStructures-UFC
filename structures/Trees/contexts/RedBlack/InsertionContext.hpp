@@ -4,6 +4,7 @@
 #include "../../../../interfaces/core/Node.hpp"
 #include "../../../../interfaces/trees/rotatable/FixupContext.hpp"
 #include "RotationContext.hpp"
+#include "../../../../PerformanceTracker.hpp"
 #include <stdexcept>
 
 enum class RBInsertionCase {
@@ -126,11 +127,19 @@ struct RBInsertionContext : public FixupContext<RBInsertionCase, T> {
 
     while (node) {
       updateRelatives();
+      RBInsertionCase case_type = getCase();
+      
+      // Track fixup operations
+      if (case_type != RBInsertionCase::ROOT && case_type != RBInsertionCase::NOFIXUP) {
+        PERF_TRACKER.incrementInsertionFixups();
+      }
 
-      switch (getCase()) {
+      switch (case_type) {
       case RBInsertionCase::ROOT:
-        if (node == m_root)
+        if (node == m_root) {
           node->color = BLACK;
+          PERF_TRACKER.incrementColorChanges();
+        }
         break;
 
       case RBInsertionCase::NOFIXUP:
@@ -139,8 +148,12 @@ struct RBInsertionContext : public FixupContext<RBInsertionCase, T> {
       case RBInsertionCase::REDUNCLE:
         parent->color = BLACK;
         uncle->color = BLACK;
-        if (grandparent != m_root)
+        PERF_TRACKER.incrementColorChanges(); // parent
+        PERF_TRACKER.incrementColorChanges(); // uncle
+        if (grandparent != m_root) {
           grandparent->color = RED;
+          PERF_TRACKER.incrementColorChanges(); // grandparent
+        }
         break;
 
       case RBInsertionCase::ZIGLEFTRIGHT:

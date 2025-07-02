@@ -4,6 +4,7 @@
 #include "../../interfaces/core/DataStructure.hpp"
 #include "../../interfaces/core/KeyExtractor.hpp"
 #include "../../interfaces/core/Node.hpp"
+#include "../../PerformanceTracker.hpp"
 
 #include <functional>
 #include <iostream>
@@ -133,6 +134,7 @@ private:
     while (!temp.empty()) {
       T element = temp.front();
       temp.pop();
+      PERF_TRACKER.incrementComparisons();
       if (KeyExtractor<T>::getKey(element) == key)
         return true;
     }

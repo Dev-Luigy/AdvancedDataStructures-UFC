@@ -3,6 +3,7 @@
 #include "../../interfaces/core/Node.hpp"
 #include "../../interfaces/enum/NodeColor.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
+#include "../../PerformanceTracker.hpp"
 #include "contexts/RedBlack/DeletionContext.hpp"
 #include "contexts/RedBlack/InsertionContext.hpp"
 #include "contexts/RedBlack/RotationContext.hpp"
@@ -180,12 +181,16 @@ private:
   void _delete_fixup(Node<T> *currentNode) {
     while (currentNode != m_root && currentNode &&
            currentNode->color == BLACK) {
+      PERF_TRACKER.incrementDeletionFixups();
+      
       if (currentNode == currentNode->parent->left) {
         Node<T> *siblingNode = currentNode->parent->right;
 
         if (siblingNode && siblingNode->color == RED) {
           siblingNode->color = BLACK;
           currentNode->parent->color = RED;
+          PERF_TRACKER.incrementColorChanges(); // sibling
+          PERF_TRACKER.incrementColorChanges(); // parent
           _rotate_left(currentNode->parent);
           siblingNode = currentNode->parent->right;
         }
@@ -194,20 +199,28 @@ private:
             (!siblingNode->left || siblingNode->left->color == BLACK) &&
             (!siblingNode->right || siblingNode->right->color == BLACK)) {
           siblingNode->color = RED;
+          PERF_TRACKER.incrementColorChanges();
           currentNode = currentNode->parent;
         } else if (siblingNode) {
           if (!siblingNode->right || siblingNode->right->color == BLACK) {
-            if (siblingNode->left)
+            if (siblingNode->left) {
               siblingNode->left->color = BLACK;
+              PERF_TRACKER.incrementColorChanges();
+            }
             siblingNode->color = RED;
+            PERF_TRACKER.incrementColorChanges();
             _rotate_right(siblingNode);
             siblingNode = currentNode->parent->right;
           }
 
           siblingNode->color = currentNode->parent->color;
           currentNode->parent->color = BLACK;
-          if (siblingNode->right)
+          PERF_TRACKER.incrementColorChanges(); // sibling
+          PERF_TRACKER.incrementColorChanges(); // parent
+          if (siblingNode->right) {
             siblingNode->right->color = BLACK;
+            PERF_TRACKER.incrementColorChanges();
+          }
           _rotate_left(currentNode->parent);
           currentNode = m_root;
         } else {
@@ -219,6 +232,8 @@ private:
         if (siblingNode && siblingNode->color == RED) {
           siblingNode->color = BLACK;
           currentNode->parent->color = RED;
+          PERF_TRACKER.incrementColorChanges(); // sibling
+          PERF_TRACKER.incrementColorChanges(); // parent
           _rotate_right(currentNode->parent);
           siblingNode = currentNode->parent->left;
         }
@@ -227,20 +242,28 @@ private:
             (!siblingNode->right || siblingNode->right->color == BLACK) &&
             (!siblingNode->left || siblingNode->left->color == BLACK)) {
           siblingNode->color = RED;
+          PERF_TRACKER.incrementColorChanges();
           currentNode = currentNode->parent;
         } else if (siblingNode) {
           if (!siblingNode->left || siblingNode->left->color == BLACK) {
-            if (siblingNode->right)
+            if (siblingNode->right) {
               siblingNode->right->color = BLACK;
+              PERF_TRACKER.incrementColorChanges();
+            }
             siblingNode->color = RED;
+            PERF_TRACKER.incrementColorChanges();
             _rotate_left(siblingNode);
             siblingNode = currentNode->parent->left;
           }
 
           siblingNode->color = currentNode->parent->color;
           currentNode->parent->color = BLACK;
-          if (siblingNode->left)
+          PERF_TRACKER.incrementColorChanges(); // sibling
+          PERF_TRACKER.incrementColorChanges(); // parent
+          if (siblingNode->left) {
             siblingNode->left->color = BLACK;
+            PERF_TRACKER.incrementColorChanges();
+          }
           _rotate_right(currentNode->parent);
           currentNode = m_root;
         } else {
@@ -249,8 +272,10 @@ private:
       }
     }
 
-    if (currentNode)
+    if (currentNode) {
       currentNode->color = BLACK;
+      PERF_TRACKER.incrementColorChanges();
+    }
   }
 
   Node<T> *_minimum(Node<T> *node) {
@@ -319,7 +344,11 @@ private:
     if (node == nullptr)
       return nullptr;
 
+    PERF_TRACKER.incrementNodesVisited();
+    PERF_TRACKER.incrementSearchDepth();
+
     KeyType nodeKey = KeyExtractor<T>::getKey(node->key);
+    PERF_TRACKER.incrementComparisons();
 
     if (key == nodeKey)
       return node;
