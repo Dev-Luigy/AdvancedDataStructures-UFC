@@ -1,10 +1,10 @@
 #ifndef EXTERN_HASHMAP_HPP
 #define EXTERN_HASHMAP_HPP
 
+#include "../../PerformanceTracker.hpp"
 #include "../../interfaces/core/DataStructure.hpp"
 #include "../../interfaces/core/KeyExtractor.hpp"
 #include "../../interfaces/core/Node.hpp"
-#include "../../PerformanceTracker.hpp"
 
 #include <functional>
 #include <iostream>
@@ -61,6 +61,8 @@ public:
 
     while (!bucket.empty()) {
       T &element = bucket.front();
+      PERF_TRACKER.incrementComparisons();
+      PERF_TRACKER.incrementNodesVisited();
       if (KeyExtractor<T>::getKey(element) == KeyExtractor<T>::getKey(value))
         result = &element;
       temp.push(std::move(element));
@@ -116,6 +118,8 @@ private:
     while (!bucket.empty()) {
       T front = bucket.front();
       bucket.pop();
+      PERF_TRACKER.incrementComparisons();
+      PERF_TRACKER.incrementNodesVisited();
       if (KeyExtractor<T>::getKey(front) == key)
         found = true;
       temp.push(front);
@@ -135,6 +139,7 @@ private:
       T element = temp.front();
       temp.pop();
       PERF_TRACKER.incrementComparisons();
+      PERF_TRACKER.incrementNodesVisited();
       if (KeyExtractor<T>::getKey(element) == key)
         return true;
     }
@@ -150,6 +155,8 @@ private:
     while (!bucket.empty()) {
       T element = bucket.front();
       bucket.pop();
+      PERF_TRACKER.incrementComparisons();
+      PERF_TRACKER.incrementNodesVisited();
       if (KeyExtractor<T>::getKey(element) == key) {
         found = true;
         continue;
