@@ -126,7 +126,7 @@ source .venv/bin/activate
 python analyze_results_dictionary.py
 ```
 
-Isso irá gerar gráficos (salvos como `performance_plot.png` ou exibidos na tela).
+Isso irá gerar gráficos (salvos como `performance_overview.png` ou exibidos na tela).
 
 ---
 
@@ -134,11 +134,11 @@ Isso irá gerar gráficos (salvos como `performance_plot.png` ou exibidos na tel
 
 ### Benchmark Geral
 
-![Gráfico Geral](performance_plot.png)
+![Gráfico Geral](performance_analysis.png)
 
 ### Execução de Frequência de Palavras
 
-![Gráfico Freq](performance_analysis.png)
+![Gráfico Freq](performance_overview.png)
 
 ---
 
