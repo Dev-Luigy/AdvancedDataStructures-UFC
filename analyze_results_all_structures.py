@@ -246,7 +246,12 @@ def performance_recommendations(df):
 def create_visualizations(df):
     """Create performance visualizations with all metrics."""
     try:
-        fig, axes = plt.subplots(4, 2, figsize=(15, 22))  # aumentei para 4 linhas
+        fig, axes = plt.subplots(4, 2, figsize=(15, 22))  # 4 linhas × 2 colunas
+
+        tree_data = df[df["Structure"].str.contains("Tree")]
+        search_data = df[df["Operation"] == "Search"]
+        insert_data = df[df["Operation"] == "Insert"]
+        rb_data = df[df["Structure"] == "RedBlack Tree"]
 
         # 1. Execution Time by Structure and Operation
         execution_pivot = df.pivot_table(
@@ -260,25 +265,25 @@ def create_visualizations(df):
         axes[0, 0].set_ylabel("Time (ms)")
         axes[0, 0].tick_params(axis="x", rotation=45)
 
-        # 2. Rotations vs Fixups (Tree structures only)
-        tree_data = df[df["Structure"].str.contains("Tree")]
-        insert_trees = tree_data[tree_data["Operation"] == "Insert"]
+        # 2. Rotations vs Insertion Fixups (substituído: scatter → linha)
+        insert_trees = insert_data[insert_data["Structure"].str.contains("Tree")]
         for structure in insert_trees["Structure"].unique():
-            struct_data = insert_trees[insert_trees["Structure"] == structure]
-            axes[0, 1].scatter(
+            struct_data = insert_trees[
+                insert_trees["Structure"] == structure
+            ].sort_values("Insertion_Fixups")
+            axes[0, 1].plot(
                 struct_data["Insertion_Fixups"],
                 struct_data["Rotations"],
+                marker="o",
                 label=structure,
-                alpha=0.7,
-                s=struct_data["Data_Size"] / 10,
             )
-        axes[0, 1].set_title("Rotations vs Insertion Fixups (Size = bubble size)")
+        axes[0, 1].set_title("Rotations vs Insertion Fixups")
         axes[0, 1].set_xlabel("Insertion Fixups")
         axes[0, 1].set_ylabel("Rotations")
         axes[0, 1].legend()
+        axes[0, 1].grid(True)
 
         # 3. Search Depth by Data Size
-        search_data = df[df["Operation"] == "Search"]
         depth_pivot = search_data.pivot_table(
             values="Search_Depth",
             index="Data_Size",
@@ -290,7 +295,7 @@ def create_visualizations(df):
         axes[1, 0].set_ylabel("Search Depth")
         axes[1, 0].set_xlabel("Data Size")
 
-        # 4. Key Comparisons vs Nodes Visited
+        # 4. Key Comparisons vs Nodes Visited (scatter permanece)
         for structure in search_data["Structure"].unique():
             struct_data = search_data[search_data["Structure"] == structure]
             axes[1, 1].scatter(
@@ -298,27 +303,25 @@ def create_visualizations(df):
                 struct_data["Key_Comparisons"],
                 label=structure,
                 alpha=0.7,
-                s=struct_data["Data_Size"] / 10,
+                s=struct_data["Data_Size"] / 200,
             )
-        axes[1, 1].set_title("Key Comparisons vs Nodes Visited (Size = bubble size)")
+        axes[1, 1].set_title("Key Comparisons vs Nodes Visited")
         axes[1, 1].set_xlabel("Nodes Visited")
         axes[1, 1].set_ylabel("Key Comparisons")
         axes[1, 1].legend()
 
-        # 5. Color Changes (RedBlack Tree only)
-        rb_data = df[df["Structure"] == "RedBlack Tree"]
+        # 5. Color Changes (RedBlack Tree only) → agora em gráfico de linha
         if not rb_data.empty:
-            rb_pivot = rb_data.pivot_table(
-                values="Color_Changes",
-                index="Data_Size",
-                columns="Operation",
-                aggfunc="sum",
-            )
-            rb_pivot.plot(kind="bar", ax=axes[2, 0])
+            for op in rb_data["Operation"].unique():
+                op_data = rb_data[rb_data["Operation"] == op].sort_values("Data_Size")
+                axes[2, 0].plot(
+                    op_data["Data_Size"], op_data["Color_Changes"], marker="o", label=op
+                )
             axes[2, 0].set_title("RedBlack Tree: Color Changes by Operation")
             axes[2, 0].set_ylabel("Color Changes")
             axes[2, 0].set_xlabel("Data Size")
-            axes[2, 0].tick_params(axis="x", rotation=0)
+            axes[2, 0].legend()
+            axes[2, 0].grid(True)
         else:
             axes[2, 0].text(
                 0.5,
@@ -330,8 +333,7 @@ def create_visualizations(df):
             )
             axes[2, 0].set_title("RedBlack Tree: Color Changes")
 
-        # 6. Scalability Analysis (All metrics)
-        insert_data = df[df["Operation"] == "Insert"]
+        # 6. Insert Scalability
         scalability_pivot = insert_data.pivot_table(
             values="Execution_Time_ms",
             index="Data_Size",
@@ -343,24 +345,24 @@ def create_visualizations(df):
         axes[2, 1].set_ylabel("Time (ms)")
         axes[2, 1].set_xlabel("Data Size")
 
+        # 7. Total Insert Time
         total_insert_time = (
             insert_data.groupby("Structure")["Execution_Time_ms"].sum().sort_values()
         )
         total_insert_time.plot(kind="barh", ax=axes[3, 0], color="skyblue")
-        axes[3, 0].set_title("Time to insert all data:")
-        axes[3, 0].set_xlabel("Total time(ms)")
+        axes[3, 0].set_title("Time to Insert All Data")
+        axes[3, 0].set_xlabel("Total time (ms)")
         axes[3, 0].set_ylabel("Data Structure")
 
-        # Deixe o último subplot vazio ou remova se quiser
+        # 8. Slot vazio (opcional)
         axes[3, 1].axis("off")
 
         plt.tight_layout()
         plt.savefig("performance_analysis.png", dpi=300, bbox_inches="tight")
-        print(f"\nVisualization saved as 'performance_analysis.png'")
+        print(f"\n✅ Visualization saved as 'performance_analysis.png'")
 
     except ImportError:
-        print(f"\nMatplotlib not available. Skipping visualizations.")
-        print(f"Install with: pip install matplotlib")
+        print("Matplotlib not available. Install with: pip install matplotlib")
 
 
 def main():
