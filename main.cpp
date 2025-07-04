@@ -51,14 +51,14 @@ size_t wordCounter(const std::string &filename) {
 }
 
 std::vector<size_t> generateLim(size_t total) {
-  std::vector<double> percentuais = {0.01, 0.05, 0.10, 0.25, 0.5, 0.75, 1.0};
-  std::vector<size_t> limites;
-  for (double p : percentuais) {
-    size_t limite = static_cast<size_t>(std::ceil(p * total));
-    if (limite > 0 && (limites.empty() || limite != limites.back()))
-      limites.push_back(limite);
+  std::vector<double> percents = {0.01, 0.05, 0.10, 0.25, 0.5, 0.75, 1.0};
+  std::vector<size_t> lims;
+  for (double p : percents) {
+    size_t lim = static_cast<size_t>(std::ceil(p * total));
+    if (lim > 0 && (lims.empty() || lim != lims.back()))
+      lims.push_back(lim);
   }
-  return limites;
+  return lims;
 }
 
 int main(int argc, char *argv[]) {
