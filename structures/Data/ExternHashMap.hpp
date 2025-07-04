@@ -63,6 +63,7 @@ public:
       T &element = bucket.front();
       PERF_TRACKER.incrementComparisons();
       PERF_TRACKER.incrementNodesVisited();
+      PERF_TRACKER.incrementSearchDepth();
       if (KeyExtractor<T>::getKey(element) == KeyExtractor<T>::getKey(value))
         result = &element;
       temp.push(std::move(element));
@@ -120,6 +121,7 @@ private:
       bucket.pop();
       PERF_TRACKER.incrementComparisons();
       PERF_TRACKER.incrementNodesVisited();
+      PERF_TRACKER.incrementSearchDepth();
       if (KeyExtractor<T>::getKey(front) == key)
         found = true;
       temp.push(front);
@@ -140,6 +142,7 @@ private:
       temp.pop();
       PERF_TRACKER.incrementComparisons();
       PERF_TRACKER.incrementNodesVisited();
+      PERF_TRACKER.incrementSearchDepth();
       if (KeyExtractor<T>::getKey(element) == key)
         return true;
     }
@@ -157,6 +160,7 @@ private:
       bucket.pop();
       PERF_TRACKER.incrementComparisons();
       PERF_TRACKER.incrementNodesVisited();
+      PERF_TRACKER.incrementSearchDepth();
       if (KeyExtractor<T>::getKey(element) == key) {
         found = true;
         continue;

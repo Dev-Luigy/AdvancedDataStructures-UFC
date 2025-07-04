@@ -77,6 +77,7 @@ private:
     do {
       PERF_TRACKER.incrementComparisons();
       PERF_TRACKER.incrementNodesVisited();
+      PERF_TRACKER.incrementSearchDepth();
       if (m_table[index].has_value() &&
           KeyExtractor<T>::getKey(m_table[index].value()) == key) {
         return static_cast<int>(index);
@@ -114,6 +115,7 @@ private:
     do {
       PERF_TRACKER.incrementComparisons();
       PERF_TRACKER.incrementNodesVisited();
+      PERF_TRACKER.incrementSearchDepth();
       if (!m_table[index].has_value()) {
         m_table[index] = value;
         ++m_number_of_elements;
@@ -136,6 +138,7 @@ private:
     do {
       PERF_TRACKER.incrementComparisons();
       PERF_TRACKER.incrementNodesVisited();
+      PERF_TRACKER.incrementSearchDepth();
       if (m_table[index].has_value() &&
           KeyExtractor<T>::getKey(m_table[index].value()) == key) {
         m_table[index].reset();
