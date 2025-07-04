@@ -1,13 +1,49 @@
 Structure,Operation,Data_Size,Execution_Time_ms,Rotations,Key_Comparisons,Insertion_Fixups,Deletion_Fixups,Search_Depth,Nodes_Visited,Color_Changes
-AVL Tree,Insert,256,0.076,111,0,76,0,0,0,0
-AVL Tree,Search,100,0.011,0,618,0,0,618,618,0
-AVL Tree,Remove,50,0.011,13,0,0,0,0,0,0
-RedBlack Tree,Insert,256,0.045,95,0,141,0,0,0,378
-RedBlack Tree,Search,100,0.009,0,594,0,0,594,594,0
-RedBlack Tree,Remove,50,0.006,0,306,0,0,306,306,8
-OpenHashMap,Insert,256,0.039,0,918,0,0,0,918,0
-OpenHashMap,Search,100,0.003,0,124,0,0,0,124,0
-OpenHashMap,Remove,50,0.222,0,6832,0,0,0,6832,0
-ExternHashMap,Insert,256,0.117,0,285,0,0,0,285,0
-ExternHashMap,Search,100,0.011,0,128,0,0,0,128,0
-ExternHashMap,Remove,50,0.006,0,67,0,0,0,67,0
+AVL Tree,Insert,32,0.053,21,0,13,0,0,0,0
+AVL Tree,Search,32,0.016,0,136,0,0,136,136,0
+AVL Tree,Remove,32,0.022,6,0,0,0,0,0,0
+RedBlack Tree,Insert,32,0.032,15,0,22,0,0,0,65
+RedBlack Tree,Search,32,0.016,0,137,0,0,137,137,0
+RedBlack Tree,Remove,32,0.015,3,93,0,3,93,93,17
+OpenHashMap,Insert,32,0.022,0,76,0,0,76,76,0
+OpenHashMap,Search,32,0.008,0,45,0,0,45,45,0
+OpenHashMap,Remove,32,0.229,0,622,0,0,622,622,0
+ExternHashMap,Insert,32,0.075,0,17,0,0,17,17,0
+ExternHashMap,Search,32,0.026,0,39,0,0,39,39,0
+ExternHashMap,Remove,32,0.028,0,38,0,0,38,38,0
+AVL Tree,Insert,64,0.115,44,0,28,0,0,0,0
+AVL Tree,Search,64,0.036,0,315,0,0,315,315,0
+AVL Tree,Remove,50,0.041,15,0,0,0,0,0,0
+RedBlack Tree,Insert,64,0.064,32,0,45,0,0,0,124
+RedBlack Tree,Search,64,0.036,0,312,0,0,312,312,0
+RedBlack Tree,Remove,50,0.03,1,208,0,3,208,208,18
+OpenHashMap,Insert,64,0.045,0,203,0,0,203,203,0
+OpenHashMap,Search,64,0.018,0,128,0,0,128,128,0
+OpenHashMap,Remove,50,0.688,0,2269,0,0,2269,2269,0
+ExternHashMap,Insert,64,0.198,0,62,0,0,62,62,0
+ExternHashMap,Search,64,0.07,0,89,0,0,89,89,0
+ExternHashMap,Remove,50,0.047,0,63,0,0,63,63,0
+AVL Tree,Insert,128,0.234,69,0,46,0,0,0,0
+AVL Tree,Search,100,0.062,0,562,0,0,562,562,0
+AVL Tree,Remove,50,0.051,18,0,0,0,0,0,0
+RedBlack Tree,Insert,128,0.125,55,0,85,0,0,0,232
+RedBlack Tree,Search,100,0.067,0,543,0,0,543,543,0
+RedBlack Tree,Remove,50,0.035,3,277,0,2,277,277,19
+OpenHashMap,Insert,128,0.087,0,430,0,0,430,430,0
+OpenHashMap,Search,100,0.026,0,172,0,0,172,172,0
+OpenHashMap,Remove,50,1.328,0,4395,0,0,4395,4395,0
+ExternHashMap,Insert,128,0.402,0,150,0,0,150,150,0
+ExternHashMap,Search,100,0.077,0,121,0,0,121,121,0
+ExternHashMap,Remove,50,0.043,0,57,0,0,57,57,0
+AVL Tree,Insert,256,0.473,111,0,76,0,0,0,0
+AVL Tree,Search,100,0.067,0,609,0,0,609,609,0
+AVL Tree,Remove,50,0.056,17,0,0,0,0,0,0
+RedBlack Tree,Insert,256,0.242,95,0,141,0,0,0,378
+RedBlack Tree,Search,100,0.067,0,618,0,0,618,618,0
+RedBlack Tree,Remove,50,0.038,0,309,0,0,309,309,8
+OpenHashMap,Insert,256,0.177,0,918,0,0,918,918,0
+OpenHashMap,Search,100,0.021,0,121,0,0,121,121,0
+OpenHashMap,Remove,50,2.312,0,7573,0,0,7573,7573,0
+ExternHashMap,Insert,256,0.455,0,285,0,0,285,285,0
+ExternHashMap,Search,100,0.072,0,129,0,0,129,129,0
+ExternHashMap,Remove,50,0.043,0,69,0,0,69,69,0

@@ -52,7 +52,8 @@ public:
       const std::string &tree_name,
       const std::vector<std::pair<std::string, int>> &data) {
     std::cout << "\n=== Testing " << tree_name
-              << " with string pairs ===" << std::endl;
+              << " with string pairs (size = " << data.size()
+              << ") ===" << std::endl;
 
     TreeType tree;
 
@@ -74,8 +75,7 @@ public:
     auto search_data = data;
     std::shuffle(search_data.begin(), search_data.end(),
                  std::mt19937{std::random_device{}()});
-    search_data.resize(std::min(search_data.size(),
-                                size_t(100))); // Busca em até 100 elementos
+    search_data.resize(std::min(search_data.size(), size_t(100)));
 
     PERF_TRACKER.startOperation(tree_name + " - Search " +
                                 std::to_string(search_data.size()) +
@@ -124,7 +124,8 @@ public:
   template <typename HashMapType>
   void testHashMap(const std::string &hashmap_name,
                    const std::vector<std::pair<std::string, int>> &data) {
-    std::cout << "\n=== Testing " << hashmap_name << " ===" << std::endl;
+    std::cout << "\n=== Testing " << hashmap_name << " (size = " << data.size()
+              << ") ===" << std::endl;
 
     HashMapType hashmap;
 
@@ -203,18 +204,37 @@ public:
       return;
     }
 
-    std::cout << "\n\n*** TESTING WITH DATA SIZE: " << string_pair_data.size()
-              << " ***\n"
-              << std::endl;
+    size_t total_size = string_pair_data.size();
 
-    testTreeWithStringPairs<AVLTree<std::pair<std::string, int>>>(
-        "AVL Tree", string_pair_data);
-    testTreeWithStringPairs<RedBlack<std::pair<std::string, int>>>(
-        "RedBlack Tree", string_pair_data);
-    testHashMap<OpenHashMap<std::pair<std::string, int>>>("OpenHashMap",
-                                                          string_pair_data);
-    testHashMap<ExternHashMap<std::pair<std::string, int>>>("ExternHashMap",
-                                                            string_pair_data);
+    std::vector<size_t> progressive_sizes;
+    size_t min_size = 32;
+    while (min_size < total_size) {
+      progressive_sizes.push_back(min_size);
+      min_size *= 2;
+    }
+
+    if (progressive_sizes.empty() || progressive_sizes.back() != total_size) {
+      progressive_sizes.push_back(total_size);
+    }
+
+    for (size_t size : progressive_sizes) {
+      if (size > total_size)
+        break;
+      std::vector<std::pair<std::string, int>> subset_data(
+          string_pair_data.begin(), string_pair_data.begin() + size);
+
+      std::cout << "\n\n*** TESTING WITH DATA SIZE: " << size << " ***\n"
+                << std::endl;
+
+      testTreeWithStringPairs<AVLTree<std::pair<std::string, int>>>(
+          "AVL Tree", subset_data);
+      testTreeWithStringPairs<RedBlack<std::pair<std::string, int>>>(
+          "RedBlack Tree", subset_data);
+      testHashMap<OpenHashMap<std::pair<std::string, int>>>("OpenHashMap",
+                                                            subset_data);
+      testHashMap<ExternHashMap<std::pair<std::string, int>>>("ExternHashMap",
+                                                              subset_data);
+    }
 
     generateReport();
   }
