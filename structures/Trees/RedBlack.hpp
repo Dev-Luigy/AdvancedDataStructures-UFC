@@ -1,9 +1,9 @@
 #ifndef REDBLACK_HPP
 #define REDBLACK_HPP
+#include "../../PerformanceTracker.hpp"
 #include "../../interfaces/core/Node.hpp"
 #include "../../interfaces/enum/NodeColor.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
-#include "../../PerformanceTracker.hpp"
 #include "contexts/RedBlack/DeletionContext.hpp"
 #include "contexts/RedBlack/InsertionContext.hpp"
 #include "contexts/RedBlack/RotationContext.hpp"
@@ -74,6 +74,12 @@ public:
   Node<T> *getNode(const T &value) override {
     KeyType key = KeyExtractor<T>::getKey(value);
     return _contains(m_root, key);
+  }
+
+  std::vector<T> getOrderedContent() const override {
+    std::vector<T> result;
+    this->in_order([&result](Node<T> *node) { result.push_back(node->key); });
+    return result;
   }
 
 private:
@@ -182,7 +188,7 @@ private:
     while (currentNode != m_root && currentNode &&
            currentNode->color == BLACK) {
       PERF_TRACKER.incrementDeletionFixups();
-      
+
       if (currentNode == currentNode->parent->left) {
         Node<T> *siblingNode = currentNode->parent->right;
 

@@ -1,9 +1,9 @@
 #ifndef AVLTREE_HPP
 #define AVLTREE_HPP
 
+#include "../../PerformanceTracker.hpp"
 #include "../../interfaces/core/Node.hpp"
 #include "../../interfaces/trees/rotatable/RotatableTree.hpp"
-#include "../../PerformanceTracker.hpp"
 #include "contexts/AVLTree/DeletionContext.hpp"
 #include "contexts/AVLTree/InsertionContext.hpp"
 #include "contexts/AVLTree/RotationContext.hpp"
@@ -86,6 +86,13 @@ public:
     return _contains(m_root, key);
   }
 
+  std::vector<std::pair<std::string, int>> getOrderedContent() const override {
+    std::vector<std::pair<std::string, int>> result;
+    this->in_order(
+        [&result](const auto &node) { result.push_back(node->key); });
+    return result;
+  }
+
 private:
   Node<T> *m_root{nullptr};
   unsigned int rotations{0};
@@ -153,7 +160,7 @@ private:
 
     PERF_TRACKER.incrementNodesVisited();
     PERF_TRACKER.incrementSearchDepth();
-    
+
     KeyType nodeKey = KeyExtractor<T>::getKey(node->key);
     PERF_TRACKER.incrementComparisons();
 

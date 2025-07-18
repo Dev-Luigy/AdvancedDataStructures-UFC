@@ -6,19 +6,16 @@
 #include "../../interfaces/core/KeyExtractor.hpp"
 #include "../../interfaces/core/Node.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
 #include <optional>
 #include <stdexcept>
 #include <vector>
 
-// reference: https://en.cppreference.com/w/cpp/types/decay.html
-
-template <
-    typename T,
-    // we need to use decay_t because of vector<list>, then we get List type.
-    typename Hash = std::hash<
-        std::decay_t<decltype(KeyExtractor<T>::getKey(std::declval<T>()))>>>
+template <typename T,
+          typename Hash = std::hash<std::decay_t<
+              decltype(KeyExtractor<T>::getKey(std::declval<T>()))>>>
 class OpenHashMap : public DataStructure<T> {
   using KeyType = decltype(KeyExtractor<T>::getKey(std::declval<T>()));
 
@@ -43,8 +40,7 @@ public:
     for (size_t i = 0; i < m_table_size; i++) {
       if (m_table[i].has_value())
         std::cout << "[" << i
-                  << "]: " << KeyExtractor<T>::getKey(m_table[i].value())
-                  << "\n";
+                  << "]: " << KeyExtractor<T>::getKey(m_table[i]->key) << "\n";
       else
         std::cout << "[" << i << "]: \n";
     }
@@ -56,11 +52,26 @@ public:
     int idx = _find_slot(KeyExtractor<T>::getKey(value));
     if (idx == -1)
       return nullptr;
-    return new Node<T>(m_table[idx].value());
+    return &m_table[idx].value();
+  }
+
+  std::vector<std::pair<std::string, int>> getOrderedContent() const override {
+    std::vector<std::pair<std::string, int>> result;
+
+    for (const auto &bucket : m_table) {
+      if (bucket.has_value()) {
+        result.push_back(bucket->key);
+      }
+    }
+
+    std::sort(result.begin(), result.end(),
+              [](const auto &a, const auto &b) { return a.first < b.first; });
+
+    return result;
   }
 
 private:
-  std::vector<std::optional<T>> m_table;
+  std::vector<std::optional<Node<T>>> m_table;
   size_t m_table_size;
   size_t m_number_of_elements;
   float m_max_load_factor;
@@ -79,7 +90,7 @@ private:
       PERF_TRACKER.incrementNodesVisited();
       PERF_TRACKER.incrementSearchDepth();
       if (m_table[index].has_value() &&
-          KeyExtractor<T>::getKey(m_table[index].value()) == key) {
+          KeyExtractor<T>::getKey(m_table[index]->key) == key) {
         return static_cast<int>(index);
       }
       index = (index + 1) % m_table_size;
@@ -90,7 +101,7 @@ private:
 
   void rehash(size_t new_size) {
     new_size = get_next_prime(new_size);
-    std::vector<std::optional<T>> old_table = m_table;
+    std::vector<std::optional<Node<T>>> old_table = m_table;
     m_table.clear();
     m_table.resize(new_size);
     m_table_size = new_size;
@@ -98,7 +109,7 @@ private:
 
     for (const auto &entry : old_table) {
       if (entry.has_value()) {
-        _insert(entry.value());
+        _insert(entry->key);
       }
     }
   }
@@ -116,11 +127,12 @@ private:
       PERF_TRACKER.incrementComparisons();
       PERF_TRACKER.incrementNodesVisited();
       PERF_TRACKER.incrementSearchDepth();
+
       if (!m_table[index].has_value()) {
-        m_table[index] = value;
+        m_table[index] = Node<T>(value);
         ++m_number_of_elements;
         return;
-      } else if (KeyExtractor<T>::getKey(m_table[index].value()) == key) {
+      } else if (KeyExtractor<T>::getKey(m_table[index]->key) == key) {
         return;
       }
       index = (index + 1) % m_table_size;
@@ -140,7 +152,7 @@ private:
       PERF_TRACKER.incrementNodesVisited();
       PERF_TRACKER.incrementSearchDepth();
       if (m_table[index].has_value() &&
-          KeyExtractor<T>::getKey(m_table[index].value()) == key) {
+          KeyExtractor<T>::getKey(m_table[index]->key) == key) {
         m_table[index].reset();
         --m_number_of_elements;
         rehash(m_table_size);

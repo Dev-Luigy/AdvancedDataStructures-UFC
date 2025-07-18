@@ -107,13 +107,13 @@ Benchmark da execução freq salvo em freq_run_results.csv
 ### ⚙️ Benchmarks Automatizados
 
 ```bash
-./benchmark texto.txt
+./maine --benchmark texto.txt
 ```
 
 Testa automaticamente todas as estruturas com diferentes tamanhos de dados e salva os resultados em:
 
 ```text
-performance_results.csv
+freq_run_results.csv
 ```
 
 ---
@@ -129,13 +129,13 @@ source .venv/bin/activate
 ### 📉 Visualização do Benchmark Geral:
 
 ```bash
-python analyze_results_all_structures.py
+.venv/bin/python3 analyze_results_all_structures.py freq_run_results.csv
 ```
 
 ### 📊 Visualização da Execução `freq`:
 
 ```bash
-python analyze_results_dictionary.py
+python analyze_results_dictionary.py freq_run_results.csv
 ```
 
 Os gráficos serão exibidos ou salvos como `performance_overview.png`.

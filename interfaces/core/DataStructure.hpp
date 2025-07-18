@@ -19,6 +19,8 @@ public:
   virtual void clear() = 0;
   virtual Node<T> *getNode(const T &value) = 0;
   virtual ~DataStructure() {}
+  virtual std::vector<std::pair<std::string, int>>
+  getOrderedContent() const = 0;
 
   template <typename Structure>
   static void execute(Structure &structure,

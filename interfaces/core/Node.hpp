@@ -2,6 +2,7 @@
 #define NODE_HPP
 
 #include "../enum/NodeColor.hpp"
+#include <vector>
 template <typename T> struct Node {
   T key;
   unsigned int height{1};
@@ -9,6 +10,7 @@ template <typename T> struct Node {
   Node<T> *right{nullptr};
   Node<T> *parent{nullptr};
   NodeColor color{RED};
+  bool leaf{true};
 
   // for binary
   Node(T key) : key(key) {};
@@ -31,4 +33,9 @@ template <typename T> struct Node {
   ~Node() {};
 };
 
+// template <typename T> struct BNode {
+//   Node<T> node{nullptr};
+//   std::vector<BNode<T>> childrens{vector<BNode<T>>()};
+// };
+//
 #endif // !NODE_HPP

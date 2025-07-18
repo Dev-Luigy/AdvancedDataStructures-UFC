@@ -6,18 +6,15 @@
 #include "../../interfaces/core/KeyExtractor.hpp"
 #include "../../interfaces/core/Node.hpp"
 
+#include <algorithm>
 #include <functional>
 #include <iostream>
 #include <queue>
 #include <vector>
 
-// reference: https://en.cppreference.com/w/cpp/types/decay.html
-
-template <
-    typename T,
-    // we need to use decay_t because of vector<list>, then we get List type.
-    typename Hash = std::hash<
-        std::decay_t<decltype(KeyExtractor<T>::getKey(std::declval<T>()))>>>
+template <typename T,
+          typename Hash = std::hash<std::decay_t<
+              decltype(KeyExtractor<T>::getKey(std::declval<T>()))>>>
 
 class ExternHashMap : public DataStructure<T> {
   using KeyType = decltype(KeyExtractor<T>::getKey(std::declval<T>()));
@@ -75,7 +72,22 @@ public:
     if (!result)
       return nullptr;
 
-    return new Node<T>(*result);
+    return reinterpret_cast<Node<T> *>(result);
+  }
+
+  std::vector<std::pair<std::string, int>> getOrderedContent() const override {
+    std::vector<std::pair<std::string, int>> result;
+    for (const auto &bucket : m_table) {
+      std::queue<T> temp = bucket;
+      while (!temp.empty()) {
+        const T &item = temp.front();
+        result.push_back(item);
+        temp.pop();
+      }
+    }
+    std::sort(result.begin(), result.end(),
+              [](const auto &a, const auto &b) { return a.first < b.first; });
+    return result;
   }
 
 private:
@@ -91,7 +103,7 @@ private:
 
   void rehash(size_t new_size) {
     new_size = get_next_prime(new_size);
-    std::vector<std::queue<T>> old_table = m_table;
+    std::vector<std::queue<T>> old_table = std::move(m_table);
 
     m_table.clear();
     m_table.resize(new_size);
@@ -126,7 +138,7 @@ private:
         found = true;
       temp.push(front);
     }
-    bucket = temp;
+    bucket = std::move(temp);
 
     if (!found) {
       bucket.push(value);
@@ -168,7 +180,7 @@ private:
       temp.push(element);
     }
 
-    bucket = temp;
+    bucket = std::move(temp);
 
     if (found)
       --m_number_of_elements;

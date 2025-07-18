@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 struct IFreqDS {
   virtual ~IFreqDS() = default;
@@ -16,6 +17,7 @@ struct IFreqDS {
   virtual Node<std::pair<std::string, int>> *
   getNode(const std::pair<std::string, int> &p) = 0;
   virtual void show() = 0;
+  virtual std::vector<std::pair<std::string, int>> getOrderedContent() = 0;
 };
 
 struct AVLWrapper : IFreqDS {
@@ -29,6 +31,9 @@ struct AVLWrapper : IFreqDS {
     return tree.getNode(p);
   }
   void show() override { tree.show(); }
+  std::vector<std::pair<std::string, int>> getOrderedContent() override {
+    return tree.getOrderedContent();
+  }
 };
 
 struct RBWrapper : IFreqDS {
@@ -42,6 +47,9 @@ struct RBWrapper : IFreqDS {
     return tree.getNode(p);
   }
   void show() override { tree.show(); }
+  std::vector<std::pair<std::string, int>> getOrderedContent() override {
+    return tree.getOrderedContent();
+  }
 };
 
 struct OpenHashWrapper : IFreqDS {
@@ -55,6 +63,9 @@ struct OpenHashWrapper : IFreqDS {
     return map.getNode(p);
   }
   void show() override { map.show(); }
+  std::vector<std::pair<std::string, int>> getOrderedContent() override {
+    return map.getOrderedContent();
+  }
 };
 
 struct ExternHashWrapper : IFreqDS {
@@ -68,6 +79,9 @@ struct ExternHashWrapper : IFreqDS {
     return map.getNode(p);
   }
   void show() override { map.show(); }
+  std::vector<std::pair<std::string, int>> getOrderedContent() override {
+    return map.getOrderedContent();
+  }
 };
 
 std::unique_ptr<IFreqDS> createStructure(const std::string &type);
